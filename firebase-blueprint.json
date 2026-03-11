@@ -1,0 +1,110 @@
+{
+  "entities": {
+    "ToApplyItem": {
+      "title": "To Apply Item",
+      "description": "A job application that the user needs to apply for.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "link": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "lastDate": { "type": "string", "format": "date" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "link", "dateAdded", "lastDate", "uid"]
+    },
+    "ReferralToGetItem": {
+      "title": "Referral To Get Item",
+      "description": "A referral that the user is waiting to receive.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "lastDate": { "type": "string", "format": "date" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "dateAdded", "lastDate", "uid"]
+    },
+    "ReferralGotItem": {
+      "title": "Referral Got Item",
+      "description": "A referral that the user has successfully obtained.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "dateGot": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "dateGot", "uid"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Basic information about the user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "InterviewHistoryItem": {
+      "title": "Interview History Item",
+      "description": "Details about a past interview experience.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "hrContact": { "type": "string" },
+        "rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["Assignment", "Interview", "HR", "Technical", "Managerial"] },
+              "questions": { "type": "array", "items": { "type": "string" } },
+              "status": { "type": "string", "enum": ["Passed", "Rejected", "Pending"] },
+              "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] },
+              "duration": { "type": "string" },
+              "interviewer": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "rejectionRoundIndex": { "type": ["number", "null"] },
+        "date": { "type": "string", "format": "date" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "salary": { "type": "string" },
+        "location": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "company", "rounds", "date", "tags", "uid"]
+    }
+  },
+  "firestore": {
+    "/toApply/{itemId}": {
+      "schema": "ToApplyItem",
+      "description": "Collection of job applications to be completed."
+    },
+    "/referralToGet/{itemId}": {
+      "schema": "ReferralToGetItem",
+      "description": "Collection of referrals pending."
+    },
+    "/referralGot/{itemId}": {
+      "schema": "ReferralGotItem",
+      "description": "Collection of referrals successfully obtained."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile information."
+    },
+    "/interviewHistory/{itemId}": {
+      "schema": "InterviewHistoryItem",
+      "description": "Collection of interview experiences."
+    }
+  }
+}
