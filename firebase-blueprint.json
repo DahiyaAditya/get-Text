@@ -90,6 +90,18 @@
         "uid": { "type": "string" }
       },
       "required": ["id", "company", "rounds", "overallStatus", "tags", "uid"]
+    },
+    "StoreItem": {
+      "title": "Store Item",
+      "description": "A piece of text stored by the user for quick access.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "content", "dateAdded", "uid"]
     }
   },
   "firestore": {
@@ -112,6 +124,10 @@
     "/interviewHistory/{itemId}": {
       "schema": "InterviewHistoryItem",
       "description": "Collection of interview experiences."
+    },
+    "/store/{itemId}": {
+      "schema": "StoreItem",
+      "description": "Collection of stored text snippets."
     }
   }
 }

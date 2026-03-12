@@ -34,7 +34,8 @@ import {
   ToApplyItem, 
   ReferralToGetItem, 
   ReferralGotItem,
-  InterviewHistoryItem
+  InterviewHistoryItem,
+  StoreItem
 } from './types';
 
 // Components
@@ -43,6 +44,7 @@ import ToApply from './components/ToApply';
 import ReferralToGet from './components/ReferralToGet';
 import ReferralGot from './components/ReferralGot';
 import InterviewHistory from './components/InterviewHistory';
+import Store from './components/Store';
 import ErrorBoundary from './components/ErrorBoundary';
 
 enum OperationType {
@@ -110,6 +112,7 @@ function AppContent() {
   const [referralToGetList, setReferralToGetList] = useState<ReferralToGetItem[]>([]);
   const [referralGotList, setReferralGotList] = useState<ReferralGotItem[]>([]);
   const [interviewHistoryList, setInterviewHistoryList] = useState<InterviewHistoryItem[]>([]);
+  const [storeList, setStoreList] = useState<StoreItem[]>([]);
 
   // Auth Listener
   useEffect(() => {
@@ -174,11 +177,17 @@ function AppContent() {
       setInterviewHistoryList(snapshot.docs.map(doc => doc.data() as InterviewHistoryItem));
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'interviewHistory'));
 
+    const qStore = query(collection(db, 'store'), where('uid', '==', user.uid));
+    const unsubStore = onSnapshot(qStore, (snapshot) => {
+      setStoreList(snapshot.docs.map(doc => doc.data() as StoreItem));
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'store'));
+
     return () => {
       unsubToApply();
       unsubToGet();
       unsubGot();
       unsubHistory();
+      unsubStore();
     };
   }, [user]);
 
@@ -317,6 +326,42 @@ function AppContent() {
     }
   };
 
+  const addStoreItem = async (content: string) => {
+    if (!user) return;
+    const id = crypto.randomUUID();
+    const item: StoreItem = {
+      id,
+      content,
+      dateAdded: new Date().toISOString(),
+      uid: user.uid
+    };
+    try {
+      await setDoc(doc(db, 'store', id), item);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `store/${id}`);
+    }
+  };
+
+  const updateStoreItem = async (id: string, content: string) => {
+    if (!user) return;
+    const item = storeList.find(i => i.id === id);
+    if (!item) return;
+    const updatedItem: StoreItem = { ...item, content };
+    try {
+      await setDoc(doc(db, 'store', id), updatedItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `store/${id}`);
+    }
+  };
+
+  const deleteStoreItem = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'store', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `store/${id}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
@@ -375,6 +420,7 @@ function AppContent() {
                 { id: 'to-get', label: 'To Get', icon: Hash },
                 { id: 'got', label: 'Got', icon: Hash },
                 { id: 'history', label: 'History', icon: History },
+                { id: 'store', label: 'Store', icon: Hash },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -482,6 +528,22 @@ function AppContent() {
                 onAdd={addInterviewHistory}
                 onUpdate={updateInterviewHistory}
                 onDelete={deleteInterviewHistory}
+              />
+            </motion.div>
+          )}
+
+          {activeTab === 'store' && (
+            <motion.div
+              key="store"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+            >
+              <Store 
+                list={storeList}
+                onAdd={addStoreItem}
+                onUpdate={updateStoreItem}
+                onDelete={deleteStoreItem}
               />
             </motion.div>
           )}

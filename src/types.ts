@@ -1,5 +1,5 @@
 export type MessageType = 'new' | 'ask' | 'thanks' | 'after' | 'closed';
-export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history';
+export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store';
 
 export interface InterviewRound {
   type: 'Assignment' | 'Interview' | 'HR' | 'Technical' | 'Managerial';
@@ -51,6 +51,13 @@ export interface ReferralGotItem {
   position: string;
   jobId: string;
   dateGot: string;
+}
+
+export interface StoreItem {
+  id: string;
+  content: string;
+  dateAdded: string;
+  uid?: string;
 }
 
 export const FIXED_MAIL = "aditya995407@gmail.com";

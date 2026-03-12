@@ -61,6 +61,14 @@ service cloud.firestore {
     //   - location: string (optional)
     //   - uid: string (required, matches owner)
     //
+    // Collection: store
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - content: string (required)
+    //   - dateAdded: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -135,6 +143,14 @@ service cloud.firestore {
              isValidDateString(data.dateGot);
     }
 
+    function isValidStoreItem(data) {
+      return data.keys().hasAll(['id', 'content', 'dateAdded', 'uid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.content is string && data.content.size() < 10000 &&
+             isValidDateString(data.dateAdded) &&
+             data.uid == request.auth.uid;
+    }
+
     function isValidInterviewHistory(data) {
       return data.keys().hasAll(['id', 'company', 'rounds', 'overallStatus', 'tags', 'uid']) &&
              data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
@@ -183,6 +199,13 @@ service cloud.firestore {
       allow read: if isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidInterviewHistory(request.resource.data);
       allow update: if isDocOwner() && isValidInterviewHistory(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /store/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidStoreItem(request.resource.data);
+      allow update: if isDocOwner() && isValidStoreItem(request.resource.data);
       allow delete: if isDocOwner() || isAdmin();
     }
 
