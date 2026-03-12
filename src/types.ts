@@ -27,6 +27,8 @@ export interface InterviewHistoryItem {
 export interface ToApplyItem {
   id: string;
   company: string;
+  position: string;
+  jobId: string;
   link: string;
   dateAdded: string;
   lastDate: string;
@@ -35,6 +37,8 @@ export interface ToApplyItem {
 export interface ReferralToGetItem {
   id: string;
   company: string;
+  position: string;
+  jobId: string;
   dateAdded: string;
   lastDate: string;
 }
@@ -42,6 +46,8 @@ export interface ReferralToGetItem {
 export interface ReferralGotItem {
   id: string;
   company: string;
+  position: string;
+  jobId: string;
   dateGot: string;
 }
 

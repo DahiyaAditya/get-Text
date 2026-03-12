@@ -19,8 +19,9 @@ export default function ReferralGot({ list, onDelete }: ReferralGotProps) {
           list.map(item => (
             <div key={item.id} className="flex items-center justify-between p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
               <div>
-                <p className="font-bold text-lg text-emerald-900">{item.company}</p>
-                <p className="text-xs text-emerald-600 font-medium">Got on: {formatDate(item.dateGot)}</p>
+                <p className="font-bold text-lg text-emerald-900 leading-tight">{item.company}</p>
+                <p className="text-xs text-emerald-700 mb-1">{item.position} {item.jobId && `• ID: ${item.jobId}`}</p>
+                <p className="text-[10px] text-emerald-600 font-medium uppercase tracking-wider">Got on: {formatDate(item.dateGot)}</p>
               </div>
               <button 
                 onClick={() => onDelete(item.id)}

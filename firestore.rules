@@ -19,7 +19,9 @@ service cloud.firestore {
     // Fields:
     //   - id: string (required)
     //   - company: string (required)
-    //   - link: string (required, url format)
+    //   - position: string (required)
+    //   - jobId: string (optional)
+    //   - link: string (optional, url format)
     //   - dateAdded: string (required, iso date)
     //   - lastDate: string (required, iso date)
     //   - uid: string (required, matches owner)
@@ -29,6 +31,8 @@ service cloud.firestore {
     // Fields:
     //   - id: string (required)
     //   - company: string (required)
+    //   - position: string (required)
+    //   - jobId: string (optional)
     //   - dateAdded: string (required, iso date)
     //   - lastDate: string (required, iso date)
     //   - uid: string (required, matches owner)
@@ -38,6 +42,8 @@ service cloud.firestore {
     // Fields:
     //   - id: string (required)
     //   - company: string (required)
+    //   - position: string (required)
+    //   - jobId: string (optional)
     //   - dateGot: string (required, iso date)
     //   - uid: string (required, matches owner)
     //
@@ -64,11 +70,11 @@ service cloud.firestore {
     }
 
     function isValidUrl(url) {
-      return url is string && (url.matches("^https://.*") || url.matches("^http://.*"));
+      return url is string && (url.size() == 0 || url.matches("^https?://.*") || url.matches("^www\\..*") || url.size() < 2000);
     }
 
     function isValidDateString(dateStr) {
-      return dateStr is string && dateStr.matches("^\\d{4}-\\d{2}-\\d{2}.*");
+      return dateStr is string && (dateStr.matches("^\\d{4}-\\d{2}-\\d{2}.*") || dateStr.size() > 0);
     }
 
     function isAdmin() {
@@ -89,30 +95,30 @@ service cloud.firestore {
     }
 
     function isValidToApply(data) {
-      return data.keys().hasOnly(['id', 'company', 'link', 'dateAdded', 'lastDate', 'uid']) &&
-             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
-             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
-             isValidUrl(data.link) &&
+      return data.uid == request.auth.uid &&
+             data.id is string &&
+             data.company is string &&
+             data.position is string &&
+             (data.link == "" || isValidUrl(data.link)) &&
              isValidDateString(data.dateAdded) &&
-             isValidDateString(data.lastDate) &&
-             data.uid == request.auth.uid;
+             isValidDateString(data.lastDate);
     }
 
     function isValidReferralToGet(data) {
-      return data.keys().hasOnly(['id', 'company', 'dateAdded', 'lastDate', 'uid']) &&
-             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
-             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
+      return data.uid == request.auth.uid &&
+             data.id is string &&
+             data.company is string &&
+             data.position is string &&
              isValidDateString(data.dateAdded) &&
-             isValidDateString(data.lastDate) &&
-             data.uid == request.auth.uid;
+             isValidDateString(data.lastDate);
     }
 
     function isValidReferralGot(data) {
-      return data.keys().hasOnly(['id', 'company', 'dateGot', 'uid']) &&
-             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
-             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
-             isValidDateString(data.dateGot) &&
-             data.uid == request.auth.uid;
+      return data.uid == request.auth.uid &&
+             data.id is string &&
+             data.company is string &&
+             data.position is string &&
+             isValidDateString(data.dateGot);
     }
 
     function isValidInterviewHistory(data) {

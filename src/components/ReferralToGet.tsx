@@ -5,18 +5,30 @@ import { formatDate } from '../utils';
 
 interface ReferralToGetProps {
   list: ReferralToGetItem[];
-  onAddManual: (company: string, lastDate: string) => void;
+  onAddManual: (company: string, position: string, jobId: string, lastDate: string) => void;
   onMoveToGot: (item: ReferralToGetItem) => void;
 }
 
 export default function ReferralToGet({ list, onAddManual, onMoveToGot }: ReferralToGetProps) {
-  const [newToGet, setNewToGet] = useState({ company: '', dateAdded: new Date().toISOString().split('T')[0], lastDate: '' });
+  const [newToGet, setNewToGet] = useState({ 
+    company: '', 
+    position: '',
+    jobId: '',
+    dateAdded: new Date().toISOString().split('T')[0], 
+    lastDate: '' 
+  });
 
   const handleAddManual = () => {
-    if (!newToGet.company) return;
+    if (!newToGet.company || !newToGet.position) return;
     const lastDate = newToGet.lastDate || new Date().toISOString().split('T')[0];
-    onAddManual(newToGet.company, lastDate);
-    setNewToGet({ company: '', dateAdded: new Date().toISOString().split('T')[0], lastDate: '' });
+    onAddManual(newToGet.company, newToGet.position, newToGet.jobId, lastDate);
+    setNewToGet({ 
+      company: '', 
+      position: '',
+      jobId: '',
+      dateAdded: new Date().toISOString().split('T')[0], 
+      lastDate: '' 
+    });
   };
 
   const getDeadlineStatus = (lastDate: string) => {
@@ -47,10 +59,24 @@ export default function ReferralToGet({ list, onAddManual, onMoveToGot }: Referr
         <div className="flex flex-wrap gap-2 w-full lg:w-auto">
           <input 
             type="text" 
-            placeholder="Company Name"
+            placeholder="Company"
             className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
             value={newToGet.company}
             onChange={(e) => setNewToGet({ ...newToGet, company: e.target.value })}
+          />
+          <input 
+            type="text" 
+            placeholder="Position"
+            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
+            value={newToGet.position}
+            onChange={(e) => setNewToGet({ ...newToGet, position: e.target.value })}
+          />
+          <input 
+            type="text" 
+            placeholder="Job ID"
+            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 w-24"
+            value={newToGet.jobId}
+            onChange={(e) => setNewToGet({ ...newToGet, jobId: e.target.value })}
           />
           <input 
             type="date" 
@@ -74,7 +100,10 @@ export default function ReferralToGet({ list, onAddManual, onMoveToGot }: Referr
             <div key={item.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
               <div className="flex-grow">
                 <div className="flex items-center gap-3 mb-2">
-                  <p className="font-bold text-lg">{item.company}</p>
+                  <div className="flex flex-col">
+                    <p className="font-bold text-lg leading-tight">{item.company}</p>
+                    <p className="text-xs text-gray-500">{item.position} {item.jobId && `• ID: ${item.jobId}`}</p>
+                  </div>
                   {status && (
                     <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}>
                       <status.icon className="w-3.5 h-3.5" />

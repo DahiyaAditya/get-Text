@@ -7,12 +7,14 @@
       "properties": {
         "id": { "type": "string" },
         "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
         "link": { "type": "string" },
         "dateAdded": { "type": "string", "format": "date-time" },
         "lastDate": { "type": "string", "format": "date" },
         "uid": { "type": "string", "description": "The user ID who owns this item." }
       },
-      "required": ["id", "company", "link", "dateAdded", "lastDate", "uid"]
+      "required": ["id", "company", "position", "dateAdded", "lastDate", "uid"]
     },
     "ReferralToGetItem": {
       "title": "Referral To Get Item",
@@ -21,11 +23,13 @@
       "properties": {
         "id": { "type": "string" },
         "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
         "dateAdded": { "type": "string", "format": "date-time" },
         "lastDate": { "type": "string", "format": "date" },
         "uid": { "type": "string", "description": "The user ID who owns this item." }
       },
-      "required": ["id", "company", "dateAdded", "lastDate", "uid"]
+      "required": ["id", "company", "position", "dateAdded", "lastDate", "uid"]
     },
     "ReferralGotItem": {
       "title": "Referral Got Item",
@@ -34,10 +38,12 @@
       "properties": {
         "id": { "type": "string" },
         "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
         "dateGot": { "type": "string", "format": "date-time" },
         "uid": { "type": "string", "description": "The user ID who owns this item." }
       },
-      "required": ["id", "company", "dateGot", "uid"]
+      "required": ["id", "company", "position", "dateGot", "uid"]
     },
     "UserProfile": {
       "title": "User Profile",

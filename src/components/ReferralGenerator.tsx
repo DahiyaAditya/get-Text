@@ -17,11 +17,26 @@ import {
 import { motion, AnimatePresence } from 'motion/react';
 import { MessageType, FIXED_MAIL, FIXED_PHONE } from '../types';
 
-export default function ReferralGenerator() {
+interface ReferralGeneratorProps {
+  prefill?: { company: string; position: string; jobId: string; link?: string } | null;
+  onPrefillUsed?: () => void;
+}
+
+export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGeneratorProps) {
   const [companyName, setCompanyName] = useState('');
   const [position, setPosition] = useState('');
   const [jobLink, setJobLink] = useState('');
   const [jobId, setJobId] = useState('');
+
+  useEffect(() => {
+    if (prefill) {
+      setCompanyName(prefill.company);
+      setPosition(prefill.position);
+      setJobId(prefill.jobId);
+      if (prefill.link) setJobLink(prefill.link);
+      if (onPrefillUsed) onPrefillUsed();
+    }
+  }, [prefill, onPrefillUsed]);
   const [shortenedLink, setShortenedLink] = useState('');
   const [isShortening, setIsShortening] = useState(false);
   const [selectedType, setSelectedType] = useState<MessageType | null>(null);

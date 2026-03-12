@@ -103,6 +103,7 @@ function AppContent() {
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('generator');
+  const [prefillData, setPrefillData] = useState<{ company: string; position: string; jobId: string; link: string } | null>(null);
 
   // Tracker State
   const [toApplyList, setToApplyList] = useState<ToApplyItem[]>([]);
@@ -182,20 +183,52 @@ function AppContent() {
   }, [user]);
 
   // Actions
-  const addToApply = async (company: string, link: string, dateAdded: string, lastDate: string) => {
+  const addToApply = async (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string) => {
     if (!user) return;
     const id = crypto.randomUUID();
-    const item: ToApplyItem & { uid: string } = { id, company, link, dateAdded, lastDate, uid: user.uid };
+    const item: ToApplyItem & { uid: string } = { 
+      id, 
+      company: company || '', 
+      position: position || '', 
+      jobId: jobId || '', 
+      link: link || '', 
+      dateAdded: dateAdded || new Date().toISOString().split('T')[0], 
+      lastDate: lastDate || new Date().toISOString().split('T')[0], 
+      uid: user.uid 
+    };
     
     try {
       await setDoc(doc(db, 'toApply', id), item);
-      
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `toApply/${id}`);
+      return; // Stop if first write fails
+    }
+
+    try {
       // Also add to Referral To Get list automatically
-      const toGetItem: ReferralToGetItem & { uid: string } = { id, company, dateAdded, lastDate, uid: user.uid };
+      const toGetItem: ReferralToGetItem & { uid: string } = { 
+        id, 
+        company, 
+        position, 
+        jobId, 
+        dateAdded, 
+        lastDate, 
+        uid: user.uid 
+      };
       await setDoc(doc(db, 'referralToGet', id), toGetItem);
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'toApply/referralToGet');
+      handleFirestoreError(error, OperationType.WRITE, `referralToGet/${id}`);
     }
+  };
+
+  const handleGenerateFromApply = (item: ToApplyItem) => {
+    setPrefillData({
+      company: item.company,
+      position: item.position,
+      jobId: item.jobId,
+      link: item.link
+    });
+    setActiveTab('generator');
   };
 
   const deleteToApply = async (id: string) => {
@@ -206,14 +239,16 @@ function AppContent() {
     }
   };
 
-  const addToGetManual = async (company: string, lastDate: string) => {
+  const addToGetManual = async (company: string, position: string, jobId: string, lastDate: string) => {
     if (!user) return;
     const id = crypto.randomUUID();
     const item: ReferralToGetItem & { uid: string } = { 
       id, 
-      company, 
+      company: company || '', 
+      position: position || '',
+      jobId: jobId || '',
       dateAdded: new Date().toISOString().split('T')[0], 
-      lastDate,
+      lastDate: lastDate || new Date().toISOString().split('T')[0],
       uid: user.uid
     };
     try {
@@ -228,16 +263,20 @@ function AppContent() {
     const id = crypto.randomUUID();
     const gotItem: ReferralGotItem & { uid: string } = {
       id,
-      company: item.company,
+      company: item.company || '',
+      position: item.position || '',
+      jobId: item.jobId || '',
       dateGot: new Date().toISOString().split('T')[0],
       uid: user.uid
     };
     
     try {
       await setDoc(doc(db, 'referralGot', id), gotItem);
+      // Try to delete from both collections just in case
       await deleteDoc(doc(db, 'referralToGet', item.id));
+      await deleteDoc(doc(db, 'toApply', item.id));
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, 'referralGot');
+      handleFirestoreError(error, OperationType.WRITE, `referralGot/${id}`);
     }
   };
 
@@ -369,7 +408,10 @@ function AppContent() {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
             >
-              <ReferralGenerator />
+              <ReferralGenerator 
+                prefill={prefillData} 
+                onPrefillUsed={() => setPrefillData(null)} 
+              />
             </motion.div>
           )}
 
@@ -384,6 +426,7 @@ function AppContent() {
                 list={toApplyList} 
                 onAdd={addToApply} 
                 onDelete={deleteToApply} 
+                onGenerate={handleGenerateFromApply}
               />
             </motion.div>
           )}
