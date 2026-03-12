@@ -43,17 +43,23 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
   const [company, setCompany] = useState('');
   const [hrContact, setHrContact] = useState('');
   const [rounds, setRounds] = useState<InterviewRound[]>([]);
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState('');
   const [salary, setSalary] = useState('');
   const [location, setLocation] = useState('');
+  const [overallStatus, setOverallStatus] = useState<'Ongoing' | 'Passed' | 'Rejected'>('Ongoing');
 
   // Stats Calculation
   const stats = useMemo(() => {
     const total = list.length;
-    const passed = list.filter(item => item.rejectionRoundIndex == null && (item.rounds || []).some(r => r.status === 'Passed')).length;
-    const rejected = list.filter(item => item.rejectionRoundIndex != null).length;
+    const passed = list.filter(item => {
+      const status = item.overallStatus || (item.rejectionRoundIndex != null ? 'Rejected' : (item.rounds || []).some(r => r.status === 'Passed') ? 'Passed' : 'Ongoing');
+      return status === 'Passed';
+    }).length;
+    const rejected = list.filter(item => {
+      const status = item.overallStatus || (item.rejectionRoundIndex != null ? 'Rejected' : (item.rounds || []).some(r => r.status === 'Passed') ? 'Passed' : 'Ongoing');
+      return status === 'Rejected';
+    }).length;
     const ongoing = total - passed - rejected;
     
     return { total, passed, rejected, ongoing };
@@ -65,13 +71,19 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
       const matchesSearch = item.company.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            (item.tags || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
+      const status = item.overallStatus || (item.rejectionRoundIndex != null ? 'Rejected' : (item.rounds || []).some(r => r.status === 'Passed') ? 'Passed' : 'Ongoing');
+
       const matchesFilter = filterStatus === 'all' || 
-                           (filterStatus === 'passed' && item.rejectionRoundIndex == null && (item.rounds || []).some(r => r.status === 'Passed')) ||
-                           (filterStatus === 'rejected' && item.rejectionRoundIndex != null) ||
-                           (filterStatus === 'ongoing' && item.rejectionRoundIndex == null && !(item.rounds || []).some(r => r.status === 'Passed'));
+                           (filterStatus === 'passed' && status === 'Passed') ||
+                           (filterStatus === 'rejected' && status === 'Rejected') ||
+                           (filterStatus === 'ongoing' && status === 'Ongoing');
       
       return matchesSearch && matchesFilter;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }).sort((a, b) => {
+      const dateA = a.rounds.length > 0 ? Math.max(...a.rounds.map(r => new Date(r.date).getTime())) : new Date(a.date || 0).getTime();
+      const dateB = b.rounds.length > 0 ? Math.max(...b.rounds.map(r => new Date(r.date).getTime())) : new Date(b.date || 0).getTime();
+      return dateB - dateA;
+    });
   }, [list, searchQuery, filterStatus]);
 
   const addRound = () => {
@@ -79,6 +91,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
       type: 'Technical',
       questions: [''],
       status: 'Pending',
+      date: new Date().toISOString().split('T')[0],
       difficulty: 'Medium',
       duration: '45 mins'
     };
@@ -89,6 +102,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
     const newRounds = [...rounds];
     newRounds[index] = { ...newRounds[index], [field]: value };
     setRounds(newRounds);
+    
+    if (field === 'status' && value === 'Rejected') {
+      setOverallStatus('Rejected');
+    }
   };
 
   const addQuestion = (roundIndex: number) => {
@@ -126,10 +143,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
       hrContact,
       rounds,
       rejectionRoundIndex: rejectionRoundIndex === -1 ? null : rejectionRoundIndex,
-      date,
       tags,
       salary,
-      location
+      location,
+      overallStatus
     };
 
     if (editingId) {
@@ -146,10 +163,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
     setCompany('');
     setHrContact('');
     setRounds([]);
-    setDate(new Date().toISOString().split('T')[0]);
     setTags([]);
     setSalary('');
     setLocation('');
+    setOverallStatus('Ongoing');
     setIsAdding(false);
     setEditingId(null);
   };
@@ -158,10 +175,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
     setCompany(item.company);
     setHrContact(item.hrContact || '');
     setRounds(item.rounds || []);
-    setDate(item.date);
     setTags(item.tags || []);
     setSalary(item.salary || '');
     setLocation(item.location || '');
+    setOverallStatus(item.overallStatus || (item.rejectionRoundIndex != null ? 'Rejected' : 'Ongoing'));
     setEditingId(item.id);
     setIsAdding(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -274,7 +291,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
-                      value={hrContact}
+                      value={hrContact || ''}
                       onChange={(e) => setHrContact(e.target.value)}
                       placeholder="Phone or Email"
                       className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
@@ -282,16 +299,23 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Date</label>
+                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Overall Status</label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                    <input
-                      type="date"
-                      required
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 flex items-center justify-center">
+                      <div className={`w-2 h-2 rounded-full ${
+                        overallStatus === 'Passed' ? 'bg-green-500' : 
+                        overallStatus === 'Rejected' ? 'bg-red-500' : 'bg-orange-400'
+                      }`} />
+                    </div>
+                    <select
+                      value={overallStatus}
+                      onChange={(e) => setOverallStatus(e.target.value as any)}
                       className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
-                    />
+                    >
+                      <option value="Ongoing">Ongoing</option>
+                      <option value="Passed">Passed (Job Offer)</option>
+                      <option value="Rejected">Rejected</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -302,7 +326,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
-                      value={location}
+                      value={location || ''}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="e.g. Remote, Bangalore"
                       className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
@@ -314,7 +338,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
-                      value={salary}
+                      value={salary || ''}
                       onChange={(e) => setSalary(e.target.value)}
                       placeholder="e.g. 25 LPA"
                       className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
@@ -379,7 +403,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         <Trash2 className="w-4 h-4" />
                       </button>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase text-gray-400">Round Type</label>
                           <select
@@ -421,13 +445,23 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                             <option value="Hard">Hard</option>
                           </select>
                         </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold uppercase text-gray-400">Date</label>
+                          <input
+                            type="date"
+                            required
+                            value={round.date || ''}
+                            onChange={(e) => updateRound(rIdx, 'date', e.target.value)}
+                            className="w-full bg-white border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-black"
+                          />
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase text-gray-400">Duration</label>
                           <input
-                            value={round.duration}
+                            value={round.duration || ''}
                             onChange={(e) => updateRound(rIdx, 'duration', e.target.value)}
                             placeholder="e.g. 45 mins"
                             className="w-full px-4 py-2 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-black"
@@ -436,7 +470,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         <div className="space-y-1">
                           <label className="text-[10px] font-bold uppercase text-gray-400">Interviewer</label>
                           <input
-                            value={round.interviewer}
+                            value={round.interviewer || ''}
                             onChange={(e) => updateRound(rIdx, 'interviewer', e.target.value)}
                             placeholder="Name (Optional)"
                             className="w-full px-4 py-2 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-black"
@@ -450,7 +484,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                           {round.questions.map((q, qIdx) => (
                             <textarea
                               key={qIdx}
-                              value={q}
+                              value={q || ''}
                               onChange={(e) => updateQuestion(rIdx, qIdx, e.target.value)}
                               placeholder={`Question ${qIdx + 1}`}
                               rows={2}
@@ -531,25 +565,21 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                       <div className="flex items-center gap-3 mb-1">
                         <h3 className="font-bold text-2xl tracking-tight">{item.company}</h3>
                         <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          item.rejectionRoundIndex != null 
+                          item.overallStatus === 'Rejected' || (item.overallStatus === undefined && item.rejectionRoundIndex != null)
                             ? 'bg-red-50 text-red-600' 
-                            : (item.rounds || []).some(r => r.status === 'Passed')
+                            : item.overallStatus === 'Passed'
                               ? 'bg-green-50 text-green-600'
                               : 'bg-orange-50 text-orange-600'
                         }`}>
-                          {item.rejectionRoundIndex != null 
-                            ? `Rejected (R${item.rejectionRoundIndex + 1})` 
-                            : (item.rounds || []).some(r => r.status === 'Passed')
+                          {item.overallStatus === 'Rejected' || (item.overallStatus === undefined && item.rejectionRoundIndex != null)
+                            ? (item.rejectionRoundIndex != null ? `Rejected (R${item.rejectionRoundIndex + 1})` : 'Rejected')
+                            : item.overallStatus === 'Passed'
                               ? 'Passed'
                               : 'Ongoing'}
                         </div>
                       </div>
                       
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
-                        <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5" />
-                          {new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-                        </span>
                         {item.location && (
                           <span className="flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5" />
@@ -642,6 +672,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                                       </span>
                                     </div>
                                     <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                                      <span className="flex items-center gap-1">
+                                        <Calendar className="w-3.5 h-3.5" />
+                                        {new Date(round.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                      </span>
                                       {round.difficulty && (
                                         <span className="flex items-center gap-1">
                                           <TrendingUp className="w-3 h-3" />

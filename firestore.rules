@@ -47,6 +47,20 @@ service cloud.firestore {
     //   - dateGot: string (required, iso date)
     //   - uid: string (required, matches owner)
     //
+    // Collection: interviewHistory
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - hrContact: string (optional)
+    //   - rounds: list (required)
+    //   - rejectionRoundIndex: number (optional)
+    //   - overallStatus: string (required, ['Ongoing', 'Passed', 'Rejected'])
+    //   - tags: list (required)
+    //   - salary: string (optional)
+    //   - location: string (optional)
+    //   - uid: string (required, matches owner)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -96,38 +110,41 @@ service cloud.firestore {
 
     function isValidToApply(data) {
       return data.uid == request.auth.uid &&
-             data.id is string &&
-             data.company is string &&
-             data.position is string &&
-             (data.link == "" || isValidUrl(data.link)) &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
+             (data.link == "" || (isValidUrl(data.link) && data.link.size() < 2000)) &&
              isValidDateString(data.dateAdded) &&
              isValidDateString(data.lastDate);
     }
 
     function isValidReferralToGet(data) {
       return data.uid == request.auth.uid &&
-             data.id is string &&
-             data.company is string &&
-             data.position is string &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
              isValidDateString(data.dateAdded) &&
              isValidDateString(data.lastDate);
     }
 
     function isValidReferralGot(data) {
       return data.uid == request.auth.uid &&
-             data.id is string &&
-             data.company is string &&
-             data.position is string &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
              isValidDateString(data.dateGot);
     }
 
     function isValidInterviewHistory(data) {
-      return data.keys().hasAll(['id', 'company', 'rounds', 'date', 'tags', 'uid']) &&
-             data.id is string && data.id.size() > 0 &&
+      return data.keys().hasAll(['id', 'company', 'rounds', 'overallStatus', 'tags', 'uid']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
              data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
-             data.rounds is list &&
-             data.tags is list &&
-             isValidDateString(data.date) &&
+             data.rounds is list && data.rounds.size() < 20 &&
+             data.tags is list && data.tags.size() < 20 &&
+             data.overallStatus in ['Ongoing', 'Passed', 'Rejected'] &&
+             (!('hrContact' in data) || (data.hrContact is string && data.hrContact.size() < 200)) &&
+             (!('salary' in data) || (data.salary is string && data.salary.size() < 100)) &&
+             (!('location' in data) || (data.location is string && data.location.size() < 200)) &&
              data.uid == request.auth.uid;
     }
 

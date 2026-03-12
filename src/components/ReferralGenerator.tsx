@@ -30,9 +30,9 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
 
   useEffect(() => {
     if (prefill) {
-      setCompanyName(prefill.company);
-      setPosition(prefill.position);
-      setJobId(prefill.jobId);
+      setCompanyName(prefill.company || '');
+      setPosition(prefill.position || '');
+      setJobId(prefill.jobId || '');
       if (prefill.link) setJobLink(prefill.link);
       if (onPrefillUsed) onPrefillUsed();
     }
@@ -127,7 +127,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
                 type="text" 
                 placeholder="e.g. Google"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
-                value={companyName}
+                value={companyName || ''}
                 onChange={(e) => setCompanyName(e.target.value)}
               />
             </div>
@@ -141,7 +141,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
                 type="text" 
                 placeholder="e.g. Software Engineer"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
-                value={position}
+                value={position || ''}
                 onChange={(e) => setPosition(e.target.value)}
               />
             </div>
@@ -155,7 +155,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
                 type="url" 
                 placeholder="https://..."
                 className="w-full pl-10 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
-                value={jobLink}
+                value={jobLink || ''}
                 onChange={(e) => setJobLink(e.target.value)}
               />
               {isShortening && (
@@ -175,7 +175,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
                 type="text" 
                 placeholder="e.g. 123456"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all"
-                value={jobId}
+                value={jobId || ''}
                 onChange={(e) => setJobId(e.target.value)}
               />
             </div>

@@ -67,7 +67,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                       type="text" 
                       placeholder="e.g. Google"
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.company}
+                      value={newToApply.company || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, company: e.target.value })}
                     />
                   </div>
@@ -80,7 +80,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                       type="text" 
                       placeholder="e.g. Software Engineer"
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.position}
+                      value={newToApply.position || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, position: e.target.value })}
                     />
                   </div>
@@ -93,7 +93,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                       type="text" 
                       placeholder="e.g. 123456"
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.jobId}
+                      value={newToApply.jobId || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, jobId: e.target.value })}
                     />
                   </div>
@@ -106,7 +106,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                       type="url" 
                       placeholder="https://..."
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.link}
+                      value={newToApply.link || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, link: e.target.value })}
                     />
                   </div>
@@ -118,7 +118,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                     <input 
                       type="date" 
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.dateAdded}
+                      value={newToApply.dateAdded || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, dateAdded: e.target.value })}
                     />
                   </div>
@@ -130,7 +130,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                     <input 
                       type="date" 
                       className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-                      value={newToApply.lastDate}
+                      value={newToApply.lastDate || ''}
                       onChange={(e) => setNewToApply({ ...newToApply, lastDate: e.target.value })}
                     />
                   </div>

@@ -5,6 +5,7 @@ export interface InterviewRound {
   type: 'Assignment' | 'Interview' | 'HR' | 'Technical' | 'Managerial';
   questions: string[];
   status: 'Passed' | 'Rejected' | 'Pending';
+  date: string;
   difficulty?: 'Easy' | 'Medium' | 'Hard';
   duration?: string; // e.g. "45 mins"
   interviewer?: string;
@@ -17,11 +18,12 @@ export interface InterviewHistoryItem {
   hrContact: string;
   rounds: InterviewRound[];
   rejectionRoundIndex: number | null;
-  date: string;
+  date?: string;
   tags: string[];
   salary?: string;
   location?: string;
   uid?: string;
+  overallStatus?: 'Ongoing' | 'Passed' | 'Rejected';
 }
 
 export interface ToApplyItem {

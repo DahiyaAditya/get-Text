@@ -61,27 +61,27 @@ export default function ReferralToGet({ list, onAddManual, onMoveToGot }: Referr
             type="text" 
             placeholder="Company"
             className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-            value={newToGet.company}
+            value={newToGet.company || ''}
             onChange={(e) => setNewToGet({ ...newToGet, company: e.target.value })}
           />
           <input 
             type="text" 
             placeholder="Position"
             className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-            value={newToGet.position}
+            value={newToGet.position || ''}
             onChange={(e) => setNewToGet({ ...newToGet, position: e.target.value })}
           />
           <input 
             type="text" 
             placeholder="Job ID"
             className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 w-24"
-            value={newToGet.jobId}
+            value={newToGet.jobId || ''}
             onChange={(e) => setNewToGet({ ...newToGet, jobId: e.target.value })}
           />
           <input 
             type="date" 
             className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
-            value={newToGet.lastDate}
+            value={newToGet.lastDate || ''}
             onChange={(e) => setNewToGet({ ...newToGet, lastDate: e.target.value })}
           />
           <button 

@@ -74,6 +74,7 @@
               "type": { "type": "string", "enum": ["Assignment", "Interview", "HR", "Technical", "Managerial"] },
               "questions": { "type": "array", "items": { "type": "string" } },
               "status": { "type": "string", "enum": ["Passed", "Rejected", "Pending"] },
+              "date": { "type": "string", "format": "date" },
               "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] },
               "duration": { "type": "string" },
               "interviewer": { "type": "string" },
@@ -82,13 +83,13 @@
           }
         },
         "rejectionRoundIndex": { "type": ["number", "null"] },
-        "date": { "type": "string", "format": "date" },
+        "overallStatus": { "type": "string", "enum": ["Ongoing", "Passed", "Rejected"] },
         "tags": { "type": "array", "items": { "type": "string" } },
         "salary": { "type": "string" },
         "location": { "type": "string" },
         "uid": { "type": "string" }
       },
-      "required": ["id", "company", "rounds", "date", "tags", "uid"]
+      "required": ["id", "company", "rounds", "overallStatus", "tags", "uid"]
     }
   },
   "firestore": {
