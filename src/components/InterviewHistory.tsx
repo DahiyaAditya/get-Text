@@ -3,6 +3,7 @@ import {
   History, 
   Plus, 
   Trash2, 
+  Edit,
   ChevronDown, 
   ChevronUp, 
   Phone, 
@@ -27,11 +28,13 @@ import { InterviewHistoryItem, InterviewRound } from '../types';
 interface Props {
   list: InterviewHistoryItem[];
   onAdd: (item: Omit<InterviewHistoryItem, 'id' | 'uid'>) => void;
+  onUpdate: (id: string, item: Omit<InterviewHistoryItem, 'id' | 'uid'>) => void;
   onDelete: (id: string) => void;
 }
 
-export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
+export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Props) {
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'passed' | 'rejected' | 'ongoing'>('all');
@@ -118,7 +121,7 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const rejectionRoundIndex = rounds.findIndex(r => r.status === 'Rejected');
-    onAdd({
+    const itemData = {
       company,
       hrContact,
       rounds,
@@ -127,15 +130,41 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
       tags,
       salary,
       location
-    });
+    };
+
+    if (editingId) {
+      onUpdate(editingId, itemData);
+    } else {
+      onAdd(itemData);
+    }
+
     // Reset
+    resetForm();
+  };
+
+  const resetForm = () => {
     setCompany('');
     setHrContact('');
     setRounds([]);
+    setDate(new Date().toISOString().split('T')[0]);
     setTags([]);
     setSalary('');
     setLocation('');
     setIsAdding(false);
+    setEditingId(null);
+  };
+
+  const handleEdit = (item: InterviewHistoryItem) => {
+    setCompany(item.company);
+    setHrContact(item.hrContact || '');
+    setRounds(item.rounds || []);
+    setDate(item.date);
+    setTags(item.tags || []);
+    setSalary(item.salary || '');
+    setLocation(item.location || '');
+    setEditingId(item.id);
+    setIsAdding(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -219,8 +248,8 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
             className="bg-white p-8 rounded-[40px] shadow-xl border border-black/5 space-y-8"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold">New Interview Experience</h3>
-              <button onClick={() => setIsAdding(false)} className="text-gray-400 hover:text-black">
+              <h3 className="text-xl font-bold">{editingId ? 'Edit Interview Experience' : 'New Interview Experience'}</h3>
+              <button onClick={resetForm} className="text-gray-400 hover:text-black">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
@@ -419,12 +448,13 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
                         <label className="text-[10px] font-bold uppercase text-gray-400">Questions Asked</label>
                         <div className="space-y-2">
                           {round.questions.map((q, qIdx) => (
-                            <input
+                            <textarea
                               key={qIdx}
                               value={q}
                               onChange={(e) => updateQuestion(rIdx, qIdx, e.target.value)}
                               placeholder={`Question ${qIdx + 1}`}
-                              className="w-full px-4 py-2 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-black"
+                              rows={2}
+                              className="w-full px-4 py-2 rounded-xl bg-white border-none text-sm focus:ring-2 focus:ring-black resize-none"
                             />
                           ))}
                         </div>
@@ -445,7 +475,7 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
               <div className="flex justify-end gap-3 pt-8 border-t border-gray-100">
                 <button
                   type="button"
-                  onClick={() => setIsAdding(false)}
+                  onClick={resetForm}
                   className="px-8 py-3 rounded-2xl text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all"
                 >
                   Discard
@@ -454,7 +484,7 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
                   type="submit"
                   className="px-8 py-3 rounded-2xl text-sm font-bold bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 transition-all"
                 >
-                  Save Experience
+                  {editingId ? 'Update Experience' : 'Save Experience'}
                 </button>
               </div>
             </form>
@@ -642,8 +672,8 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
                                     </p>
                                     <ul className="space-y-3">
                                       {(round.questions || []).map((q, qIdx) => (
-                                        <li key={qIdx} className="text-sm text-gray-700 leading-relaxed flex gap-3">
-                                          <span className="text-gray-300 font-mono font-bold">{qIdx + 1}.</span>
+                                        <li key={qIdx} className="text-sm text-gray-700 leading-relaxed flex gap-3 whitespace-pre-wrap">
+                                          <span className="text-gray-300 font-mono font-bold shrink-0">{qIdx + 1}.</span>
                                           {q || 'No question recorded'}
                                         </li>
                                       ))}
@@ -664,7 +694,19 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
                       </div>
 
                       <div className="flex justify-end pt-6 border-t border-gray-100">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(item);
+                            }}
+                            className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-xs font-bold transition-colors bg-blue-50/50 px-4 py-2 rounded-xl"
+                          >
+                            <Edit className="w-4 h-4" />
+                            Edit Experience
+                          </button>
+
+                          <div className="flex items-center gap-2">
                           <AnimatePresence mode="wait">
                             {expandedId === `delete-${item.id}` ? (
                               <motion.div
@@ -714,7 +756,8 @@ export default function InterviewHistory({ list, onAdd, onDelete }: Props) {
                         </div>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
+                </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>

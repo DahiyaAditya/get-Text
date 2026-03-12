@@ -299,6 +299,16 @@ function AppContent() {
     }
   };
 
+  const updateInterviewHistory = async (id: string, item: Omit<InterviewHistoryItem, 'id' | 'uid'>) => {
+    if (!user) return;
+    const updatedItem: InterviewHistoryItem = { ...item, id, uid: user.uid };
+    try {
+      await setDoc(doc(db, 'interviewHistory', id), updatedItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `interviewHistory/${id}`);
+    }
+  };
+
   const deleteInterviewHistory = async (id: string) => {
     try {
       await deleteDoc(doc(db, 'interviewHistory', id));
@@ -470,6 +480,7 @@ function AppContent() {
               <InterviewHistory 
                 list={interviewHistoryList}
                 onAdd={addInterviewHistory}
+                onUpdate={updateInterviewHistory}
                 onDelete={deleteInterviewHistory}
               />
             </motion.div>
