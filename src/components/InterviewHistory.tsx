@@ -187,7 +187,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
   return (
     <div className="space-y-8">
       {/* Stats Dashboard */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
           { label: 'Total', value: stats.total, icon: BarChart3, color: 'text-blue-600', bg: 'bg-blue-50' },
           { label: 'Passed', value: stats.passed, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
@@ -199,39 +199,39 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
             key={stat.label}
-            className="bg-white p-6 rounded-[32px] border border-black/5 shadow-sm"
+            className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-black/5 shadow-sm"
           >
-            <div className={`w-10 h-10 ${stat.bg} ${stat.color} rounded-2xl flex items-center justify-center mb-4`}>
-              <stat.icon className="w-5 h-5" />
+            <div className={`w-8 h-8 md:w-10 md:h-10 ${stat.bg} ${stat.color} rounded-xl md:rounded-2xl flex items-center justify-center mb-3 md:mb-4`}>
+              <stat.icon className="w-4 h-4 md:w-5 md:h-5" />
             </div>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
-            <p className="text-2xl font-bold mt-1">{stat.value}</p>
+            <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-wider">{stat.label}</p>
+            <p className="text-xl md:text-2xl font-bold mt-1">{stat.value}</p>
           </motion.div>
         ))}
       </div>
 
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center shadow-sm">
+          <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <History className="w-5 h-5" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">Interview History</h2>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+          <div className="relative w-full md:w-64">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search company or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-black/5 rounded-2xl text-sm focus:ring-2 focus:ring-black transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-black/5 rounded-2xl text-sm focus:ring-2 focus:ring-black transition-all"
             />
           </div>
           <button
             onClick={() => setIsAdding(!isAdding)}
-            className="flex items-center gap-2 bg-black text-white px-6 py-2 rounded-2xl text-sm font-medium hover:bg-gray-800 transition-all shadow-md whitespace-nowrap"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 bg-black text-white px-6 py-2.5 rounded-2xl text-sm font-medium hover:bg-gray-800 transition-all shadow-md whitespace-nowrap"
           >
             <Plus className="w-4 h-4" />
             Add Experience
@@ -262,19 +262,19 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="bg-white p-8 rounded-[40px] shadow-xl border border-black/5 space-y-8"
+            className="bg-white p-5 md:p-8 rounded-[32px] md:rounded-[40px] shadow-xl border border-black/5 space-y-6 md:space-y-8"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold">{editingId ? 'Edit Interview Experience' : 'New Interview Experience'}</h3>
-              <button onClick={resetForm} className="text-gray-400 hover:text-black">
+              <h3 className="text-lg md:text-xl font-bold">{editingId ? 'Edit Experience' : 'New Experience'}</h3>
+              <button onClick={resetForm} className="text-gray-400 hover:text-black p-1">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Company Name</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Company Name</label>
                   <div className="relative">
                     <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
@@ -282,24 +282,24 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                       value={company}
                       onChange={(e) => setCompany(e.target.value)}
                       placeholder="e.g. Google"
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all text-sm md:text-base"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">HR Contact</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">HR Contact</label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       value={hrContact || ''}
                       onChange={(e) => setHrContact(e.target.value)}
                       placeholder="Phone or Email"
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all text-sm md:text-base"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Overall Status</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Overall Status</label>
                   <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 flex items-center justify-center">
                       <div className={`w-2 h-2 rounded-full ${
@@ -310,7 +310,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                     <select
                       value={overallStatus}
                       onChange={(e) => setOverallStatus(e.target.value as any)}
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all text-sm md:text-base"
                     >
                       <option value="Ongoing">Ongoing</option>
                       <option value="Passed">Passed (Job Offer)</option>
@@ -320,28 +320,28 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Location</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Location</label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       value={location || ''}
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="e.g. Remote, Bangalore"
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all text-sm md:text-base"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Salary Package (Optional)</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-gray-400">Salary Package (Optional)</label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input
                       value={salary || ''}
                       onChange={(e) => setSalary(e.target.value)}
                       placeholder="e.g. 25 LPA"
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl bg-gray-50 border-none focus:ring-2 focus:ring-black transition-all text-sm md:text-base"
                     />
                   </div>
                 </div>
@@ -506,17 +506,17 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-8 border-t border-gray-100">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 md:pt-8 border-t border-gray-100">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-8 py-3 rounded-2xl text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all"
+                  className="w-full sm:w-auto px-8 py-3 rounded-2xl text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all"
                 >
                   Discard
                 </button>
                 <button
                   type="submit"
-                  className="px-8 py-3 rounded-2xl text-sm font-bold bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 transition-all"
+                  className="w-full sm:w-auto px-8 py-3 rounded-2xl text-sm font-bold bg-black text-white hover:bg-gray-800 shadow-lg shadow-black/10 transition-all"
                 >
                   {editingId ? 'Update Experience' : 'Save Experience'}
                 </button>
@@ -544,10 +544,10 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
             <motion.div
               layout
               key={item.id}
-              className="bg-white rounded-[40px] shadow-sm border border-black/5 overflow-hidden hover:shadow-md transition-all group"
+              className="bg-white rounded-[32px] md:rounded-[40px] shadow-sm border border-black/5 overflow-hidden hover:shadow-md transition-all group"
             >
               <div 
-                className="p-8 cursor-pointer"
+                className="p-5 md:p-8 cursor-pointer"
                 onClick={() => {
                   if (expandedId === item.id || expandedId === `delete-${item.id}`) {
                     setExpandedId(null);
@@ -556,15 +556,15 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                   }
                 }}
               >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-start gap-5">
-                    <div className="w-16 h-16 bg-gray-50 rounded-[24px] flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-500">
-                      <Building2 className="w-8 h-8" />
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6">
+                  <div className="flex items-start gap-4 md:gap-5">
+                    <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-50 rounded-[18px] md:rounded-[24px] flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all duration-500 shrink-0">
+                      <Building2 className="w-6 h-6 md:w-8 md:h-8" />
                     </div>
-                    <div>
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-bold text-2xl tracking-tight">{item.company}</h3>
-                        <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                        <h3 className="font-bold text-lg md:text-2xl tracking-tight truncate">{item.company}</h3>
+                        <div className={`px-2 py-0.5 md:px-3 md:py-1 rounded-full text-[9px] md:text-[10px] font-bold uppercase tracking-wider ${
                           item.overallStatus === 'Rejected' || (item.overallStatus === undefined && item.rejectionRoundIndex != null)
                             ? 'bg-red-50 text-red-600' 
                             : item.overallStatus === 'Passed'
@@ -579,7 +579,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         </div>
                       </div>
                       
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] md:text-sm text-gray-400">
                         {item.location && (
                           <span className="flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5" />
@@ -594,9 +594,9 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         )}
                       </div>
 
-                      <div className="flex flex-wrap gap-2 mt-3">
+                      <div className="flex flex-wrap gap-1.5 mt-2 md:mt-3">
                         {(item.tags || []).map(tag => (
-                          <span key={tag} className="bg-gray-50 text-gray-400 px-2.5 py-0.5 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-black/5">
+                          <span key={tag} className="bg-gray-50 text-gray-400 px-2 py-0.5 rounded-lg text-[9px] md:text-[10px] font-bold uppercase tracking-wider border border-black/5">
                             {tag}
                           </span>
                         ))}
@@ -604,23 +604,24 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                    <div className="text-right hidden md:block">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Rounds</p>
-                      <div className="flex gap-1 justify-end">
+                  <div className="flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-3 md:pt-0">
+                    <div className="text-left md:text-right">
+                      <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Rounds</p>
+                      <div className="flex gap-1 justify-start md:justify-end">
                         {(item.rounds || []).map((r, i) => (
                           <div 
                             key={i} 
-                            className={`w-2 h-2 rounded-full ${
+                            className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full ${
                               r.status === 'Passed' ? 'bg-green-500' : 
                               r.status === 'Rejected' ? 'bg-red-500' : 'bg-orange-300'
                             }`} 
                           />
                         ))}
+                        {(item.rounds || []).length === 0 && <span className="text-[10px] text-gray-300">None</span>}
                       </div>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
-                      {expandedId === item.id ? <ChevronUp className="w-5 h-5 text-gray-400" /> : <ChevronDown className="w-5 h-5 text-gray-400" />}
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-gray-100 transition-colors">
+                      {expandedId === item.id ? <ChevronUp className="w-4 h-4 md:w-5 md:h-5 text-gray-400" /> : <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-gray-400" />}
                     </div>
                   </div>
                 </div>
@@ -634,44 +635,44 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                     exit={{ opacity: 0, height: 0 }}
                     className="border-t border-gray-50 bg-gray-50/30"
                   >
-                    <div className="p-8 space-y-8">
+                    <div className="p-5 md:p-8 space-y-6 md:space-y-8">
                       {/* HR Info */}
                       {item.hrContact && (
                         <div className="bg-white p-4 rounded-2xl border border-black/5 flex items-center gap-4">
-                          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
+                          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
                             <Phone className="w-5 h-5" />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">HR Contact</p>
-                            <p className="font-bold text-sm">{item.hrContact}</p>
+                            <p className="font-bold text-sm truncate">{item.hrContact}</p>
                           </div>
                         </div>
                       )}
 
                       {/* Timeline of Rounds */}
-                      <div className="space-y-6">
-                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Interview Timeline</p>
-                        <div className="grid grid-cols-1 gap-6">
+                      <div className="space-y-4 md:space-y-6">
+                        <p className="text-[10px] md:text-xs font-bold text-gray-400 uppercase tracking-widest">Interview Timeline</p>
+                        <div className="grid grid-cols-1 gap-4 md:gap-6">
                           {(item.rounds || []).map((round, idx) => (
-                            <div key={idx} className="relative pl-10 border-l-2 border-gray-200 pb-2 last:pb-0">
-                              <div className={`absolute -left-[11px] top-0 w-5 h-5 rounded-full border-4 border-white shadow-sm ${
+                            <div key={idx} className="relative pl-8 md:pl-10 border-l-2 border-gray-200 pb-2 last:pb-0">
+                              <div className={`absolute -left-[9px] md:-left-[11px] top-0 w-4 h-4 md:w-5 md:h-5 rounded-full border-4 border-white shadow-sm ${
                                 round.status === 'Passed' ? 'bg-green-500' : 
                                 round.status === 'Rejected' ? 'bg-red-500' : 'bg-orange-400'
                               }`} />
                               
-                              <div className="bg-white p-6 rounded-[32px] border border-black/5 shadow-sm space-y-4">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                              <div className="bg-white p-4 md:p-6 rounded-[24px] md:rounded-[32px] border border-black/5 shadow-sm space-y-4">
+                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
                                   <div>
-                                    <div className="flex items-center gap-3 mb-1">
-                                      <h4 className="font-bold text-lg">Round {idx + 1}: {round.type}</h4>
-                                      <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
+                                    <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-1">
+                                      <h4 className="font-bold text-base md:text-lg">Round {idx + 1}: {round.type}</h4>
+                                      <span className={`text-[9px] md:text-[10px] font-bold uppercase px-2 py-0.5 rounded-md ${
                                         round.status === 'Passed' ? 'bg-green-50 text-green-600' : 
                                         round.status === 'Rejected' ? 'bg-red-50 text-red-600' : 'bg-orange-50 text-orange-600'
                                       }`}>
                                         {round.status}
                                       </span>
                                     </div>
-                                    <div className="flex flex-wrap items-center gap-4 text-xs text-gray-400">
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] md:text-xs text-gray-400">
                                       <span className="flex items-center gap-1">
                                         <Calendar className="w-3.5 h-3.5" />
                                         {new Date(round.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -679,7 +680,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                                       {round.difficulty && (
                                         <span className="flex items-center gap-1">
                                           <TrendingUp className="w-3 h-3" />
-                                          {round.difficulty} Difficulty
+                                          {round.difficulty}
                                         </span>
                                       )}
                                       {round.duration && (
@@ -699,14 +700,14 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                                 </div>
                                 
                                 {(round.questions || []).length > 0 && (
-                                  <div className="bg-gray-50 rounded-2xl p-5 space-y-3">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                  <div className="bg-gray-50 rounded-2xl p-4 md:p-5 space-y-3">
+                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
                                       <MessageSquare className="w-3.5 h-3.5" />
                                       Questions Asked
                                     </p>
                                     <ul className="space-y-3">
                                       {(round.questions || []).map((q, qIdx) => (
-                                        <li key={qIdx} className="text-sm text-gray-700 leading-relaxed flex gap-3 whitespace-pre-wrap">
+                                        <li key={qIdx} className="text-xs md:text-sm text-gray-700 leading-relaxed flex gap-2 md:gap-3 whitespace-pre-wrap">
                                           <span className="text-gray-300 font-mono font-bold shrink-0">{qIdx + 1}.</span>
                                           {q || 'No question recorded'}
                                         </li>
@@ -717,8 +718,8 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
 
                                 {round.notes && (
                                   <div className="pt-2">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Notes</p>
-                                    <p className="text-sm text-gray-600 italic">{round.notes}</p>
+                                    <p className="text-[9px] md:text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Notes</p>
+                                    <p className="text-xs md:text-sm text-gray-600 italic">{round.notes}</p>
                                   </div>
                                 )}
                               </div>
@@ -727,20 +728,19 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         </div>
                       </div>
 
-                      <div className="flex justify-end pt-6 border-t border-gray-100">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEdit(item);
-                            }}
-                            className="flex items-center gap-2 text-blue-500 hover:text-blue-600 text-xs font-bold transition-colors bg-blue-50/50 px-4 py-2 rounded-xl"
-                          >
-                            <Edit className="w-4 h-4" />
-                            Edit Experience
-                          </button>
+                      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEdit(item);
+                          }}
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 text-blue-500 hover:text-blue-600 text-xs font-bold transition-colors bg-blue-50/50 px-4 py-2.5 rounded-xl"
+                        >
+                          <Edit className="w-4 h-4" />
+                          Edit Experience
+                        </button>
 
-                          <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
                           <AnimatePresence mode="wait">
                             {expandedId === `delete-${item.id}` ? (
                               <motion.div
@@ -748,27 +748,29 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                className="flex items-center gap-2 bg-red-50 px-4 py-2 rounded-xl"
+                                className="flex items-center justify-between sm:justify-start gap-2 bg-red-50 px-4 py-2 rounded-xl w-full sm:w-auto"
                               >
                                 <span className="text-[10px] font-bold text-red-600 uppercase tracking-wider">Are you sure?</span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDelete(item.id);
-                                  }}
-                                  className="text-xs font-bold text-red-700 hover:underline"
-                                >
-                                  Yes, Delete
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setExpandedId(item.id); // Go back to normal expanded state
-                                  }}
-                                  className="text-xs font-bold text-gray-400 hover:text-black"
-                                >
-                                  Cancel
-                                </button>
+                                <div className="flex items-center gap-3">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onDelete(item.id);
+                                    }}
+                                    className="text-xs font-bold text-red-700 hover:underline"
+                                  >
+                                    Delete
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setExpandedId(item.id);
+                                    }}
+                                    className="text-xs font-bold text-gray-400 hover:text-black"
+                                  >
+                                    No
+                                  </button>
+                                </div>
                               </motion.div>
                             ) : (
                               <motion.button
@@ -780,7 +782,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                                   e.stopPropagation();
                                   setExpandedId(`delete-${item.id}`);
                                 }}
-                                className="flex items-center gap-2 text-red-400 hover:text-red-600 text-xs font-bold transition-colors bg-red-50/50 px-4 py-2 rounded-xl"
+                                className="w-full sm:w-auto flex items-center justify-center gap-2 text-red-400 hover:text-red-600 text-xs font-bold transition-colors bg-red-50/50 px-4 py-2.5 rounded-xl"
                               >
                                 <Trash2 className="w-4 h-4" />
                                 Delete Experience
@@ -790,8 +792,7 @@ export default function InterviewHistory({ list, onAdd, onUpdate, onDelete }: Pr
                         </div>
                       </div>
                     </div>
-                  </div>
-                </motion.div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>

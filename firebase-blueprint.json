@@ -102,6 +102,24 @@
         "uid": { "type": "string" }
       },
       "required": ["id", "content", "dateAdded", "uid"]
+    },
+    "TodoItem": {
+      "title": "To-Do Item",
+      "description": "A task related to interviews or assignments.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "type": { "type": "string", "enum": ["Interview", "Assignment", "Other"] },
+        "dueDate": { "type": "string", "format": "date" },
+        "dueTime": { "type": "string", "description": "Time in HH:mm format" },
+        "thoughts": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "alertTriggered": { "type": "boolean" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "company", "type", "dueDate", "completed", "dateAdded", "uid"]
     }
   },
   "firestore": {
@@ -128,6 +146,10 @@
     "/store/{itemId}": {
       "schema": "StoreItem",
       "description": "Collection of stored text snippets."
+    },
+    "/todos/{itemId}": {
+      "schema": "TodoItem",
+      "description": "Collection of to-do tasks for interviews and assignments."
     }
   }
 }

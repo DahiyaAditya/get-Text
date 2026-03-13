@@ -53,40 +53,40 @@ export default function ReferralToGet({ list, onAddManual, onMoveToGot }: Referr
   };
 
   return (
-    <div className="bg-white p-8 rounded-3xl shadow-sm border border-black/5">
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-4">
-        <h2 className="text-2xl font-bold">Referral To Get</h2>
-        <div className="flex flex-wrap gap-2 w-full lg:w-auto">
+    <div className="bg-white p-5 md:p-8 rounded-[32px] shadow-sm border border-black/5">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center mb-8 gap-4">
+        <h2 className="text-xl md:text-2xl font-bold">Referral To Get</h2>
+        <div className="flex flex-wrap gap-2 w-full xl:w-auto">
           <input 
             type="text" 
             placeholder="Company"
-            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
+            className="flex-grow xl:flex-none px-4 py-3 md:py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
             value={newToGet.company || ''}
             onChange={(e) => setNewToGet({ ...newToGet, company: e.target.value })}
           />
           <input 
             type="text" 
             placeholder="Position"
-            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
+            className="flex-grow xl:flex-none px-4 py-3 md:py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
             value={newToGet.position || ''}
             onChange={(e) => setNewToGet({ ...newToGet, position: e.target.value })}
           />
           <input 
             type="text" 
             placeholder="Job ID"
-            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 w-24"
+            className="flex-grow xl:flex-none px-4 py-3 md:py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5 w-24"
             value={newToGet.jobId || ''}
             onChange={(e) => setNewToGet({ ...newToGet, jobId: e.target.value })}
           />
           <input 
             type="date" 
-            className="flex-grow lg:flex-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
+            className="flex-grow xl:flex-none px-4 py-3 md:py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/5"
             value={newToGet.lastDate || ''}
             onChange={(e) => setNewToGet({ ...newToGet, lastDate: e.target.value })}
           />
           <button 
             onClick={handleAddManual}
-            className="bg-black text-white px-6 py-2 rounded-xl text-sm font-medium hover:bg-gray-800 transition-all"
+            className="w-full xl:w-auto bg-black text-white px-6 py-3 md:py-2 rounded-xl text-sm font-bold hover:bg-gray-800 transition-all shadow-md"
           >
             Add
           </button>
@@ -97,28 +97,28 @@ export default function ReferralToGet({ list, onAddManual, onMoveToGot }: Referr
         {list.map(item => {
           const status = getDeadlineStatus(item.lastDate);
           return (
-            <div key={item.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-2xl border border-gray-100">
-              <div className="flex-grow">
-                <div className="flex items-center gap-3 mb-2">
+            <div key={item.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 md:p-6 bg-gray-50 rounded-2xl border border-gray-100 gap-4">
+              <div className="flex-grow w-full">
+                <div className="flex flex-wrap items-center gap-3 mb-2">
                   <div className="flex flex-col">
                     <p className="font-bold text-lg leading-tight">{item.company}</p>
                     <p className="text-xs text-gray-500">{item.position} {item.jobId && `• ID: ${item.jobId}`}</p>
                   </div>
                   {status && (
-                    <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${status.color}`}>
-                      <status.icon className="w-3.5 h-3.5" />
+                    <span className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border ${status.color}`}>
+                      <status.icon className="w-3 h-3" />
                       {status.label}
                     </span>
                   )}
                 </div>
-                <div className="flex gap-4 text-xs text-gray-500">
+                <div className="flex flex-wrap gap-x-4 gap-y-1 text-[10px] md:text-xs text-gray-500">
                   <span>Added: {formatDate(item.dateAdded)}</span>
                   {item.lastDate && <span className={status?.label === 'Today!' ? 'text-red-500 font-bold' : ''}>Deadline: {formatDate(item.lastDate)}</span>}
                 </div>
               </div>
               <button 
                 onClick={() => onMoveToGot(item)}
-                className="bg-emerald-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-sm"
+                className="w-full sm:w-auto bg-emerald-500 text-white px-6 py-3 md:py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-sm shrink-0"
               >
                 Got Referral
               </button>

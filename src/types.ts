@@ -1,5 +1,5 @@
 export type MessageType = 'new' | 'ask' | 'thanks' | 'after' | 'closed';
-export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store';
+export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store' | 'to-do';
 
 export interface InterviewRound {
   type: 'Assignment' | 'Interview' | 'HR' | 'Technical' | 'Managerial';
@@ -56,6 +56,19 @@ export interface ReferralGotItem {
 export interface StoreItem {
   id: string;
   content: string;
+  dateAdded: string;
+  uid?: string;
+}
+
+export interface TodoItem {
+  id: string;
+  company: string;
+  type: 'Interview' | 'Assignment' | 'Other';
+  dueDate: string;
+  dueTime?: string; // HH:mm format
+  thoughts: string;
+  completed: boolean;
+  alertTriggered?: boolean;
   dateAdded: string;
   uid?: string;
 }

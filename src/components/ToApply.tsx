@@ -34,15 +34,15 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
 
   return (
     <div className="space-y-6">
-      <div className="bg-white p-8 rounded-[32px] shadow-sm border border-black/5">
-        <div className="flex items-center justify-between mb-8">
+      <div className="bg-white p-5 md:p-8 rounded-[32px] shadow-sm border border-black/5">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Companies To Apply</h2>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight">Companies To Apply</h2>
             <p className="text-sm text-gray-500 mt-1">Track your job applications and generate referral requests.</p>
           </div>
           <button 
             onClick={() => setIsAdding(!isAdding)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all ${
+            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-2xl text-sm font-bold transition-all ${
               isAdding ? 'bg-gray-100 text-gray-600' : 'bg-black text-white shadow-md hover:bg-gray-800'
             }`}
           >
@@ -148,7 +148,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
           )}
         </AnimatePresence>
 
-        <div className="overflow-x-auto rounded-2xl border border-gray-100">
+        <div className="hidden md:block overflow-x-auto rounded-2xl border border-gray-100">
           <table className="w-full text-left border-collapse min-w-[900px]">
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
@@ -230,6 +230,67 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile List View */}
+        <div className="md:hidden space-y-4">
+          {list.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 text-gray-400 py-12">
+              <Building2 className="w-8 h-8 opacity-20" />
+              <p className="italic text-sm">No applications tracked yet.</p>
+            </div>
+          ) : (
+            list.map((item) => (
+              <div key={item.id} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 space-y-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3 className="font-bold text-gray-900">{item.company}</h3>
+                    <p className="text-xs text-gray-500">{item.position}</p>
+                  </div>
+                  <button 
+                    onClick={() => onDelete(item.id)}
+                    className="p-1 text-gray-300 hover:text-red-500 transition-colors"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="bg-white p-2 rounded-lg border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">Job ID</p>
+                    <p className="font-mono text-gray-700">{item.jobId || 'N/A'}</p>
+                  </div>
+                  <div className="bg-white p-2 rounded-lg border border-gray-100">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase mb-0.5">Deadline</p>
+                    <p className={`font-bold ${new Date(item.lastDate) < new Date() ? 'text-red-400' : 'text-orange-500'}`}>
+                      {formatDate(item.lastDate)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-2">
+                  {item.link ? (
+                    <a 
+                      href={item.link} 
+                      target="_blank" 
+                      rel="noreferrer" 
+                      className="text-blue-600 font-bold text-xs flex items-center gap-1"
+                    >
+                      Apply Link <LinkIcon className="w-3 h-3" />
+                    </a>
+                  ) : <span className="text-xs text-gray-300 italic">No link</span>}
+                  
+                  <button 
+                    onClick={() => onGenerate(item)}
+                    className="flex items-center gap-1.5 bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold shadow-sm"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    GENERATE
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

@@ -108,11 +108,11 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
       <motion.div 
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="bg-white p-6 rounded-3xl shadow-sm border border-black/5"
+        className="bg-white p-5 md:p-6 rounded-[32px] shadow-sm border border-black/5"
       >
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <Briefcase className="w-5 h-5" /> Job Details
@@ -181,18 +181,18 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 block">Mail ID</label>
-              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-100 p-2 rounded-lg border border-gray-200">
-                <Mail className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-100 p-3 md:p-2 rounded-lg border border-gray-200">
+                <Mail className="w-3.5 h-3.5 shrink-0" />
                 <span className="truncate">{FIXED_MAIL}</span>
               </div>
             </div>
             <div>
               <label className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-1 block">Phone No</label>
-              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-100 p-2 rounded-lg border border-gray-200">
-                <Phone className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-gray-100 p-3 md:p-2 rounded-lg border border-gray-200">
+                <Phone className="w-3.5 h-3.5 shrink-0" />
                 <span>{FIXED_PHONE}</span>
               </div>
             </div>
@@ -205,7 +205,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
         animate={{ opacity: 1, x: 0 }}
         className="flex flex-col gap-6"
       >
-        <div className="bg-white p-6 rounded-3xl shadow-sm border border-black/5">
+        <div className="bg-white p-5 md:p-6 rounded-[32px] shadow-sm border border-black/5">
           <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
             <Send className="w-5 h-5" /> Select Message Type
           </h2>
@@ -220,9 +220,9 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
               <button
                 key={btn.id}
                 onClick={() => generateMessage(btn.id as MessageType)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-3 px-4 py-4 md:py-3 rounded-2xl text-sm font-bold transition-all ${
                   selectedType === btn.id 
-                    ? 'bg-black text-white shadow-lg' 
+                    ? 'bg-black text-white shadow-lg scale-[1.02]' 
                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
                 }`}
               >
@@ -240,7 +240,7 @@ export default function ReferralGenerator({ prefill, onPrefillUsed }: ReferralGe
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white p-6 rounded-3xl shadow-sm border border-black/5 flex-grow flex flex-col"
+              className="bg-white p-5 md:p-6 rounded-[32px] shadow-sm border border-black/5 flex-grow flex flex-col"
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-gray-500">Generated Message</h3>

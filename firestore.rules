@@ -69,6 +69,18 @@ service cloud.firestore {
     //   - dateAdded: string (required, iso date)
     //   - uid: string (required, matches owner)
     //
+    // Collection: todos
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - type: string (required, ['Interview', 'Assignment', 'Other'])
+    //   - dueDate: string (required, iso date)
+    //   - thoughts: string (optional)
+    //   - completed: boolean (required)
+    //   - dateAdded: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
     // ===============================================================
 
     // ===============================================================
@@ -164,6 +176,20 @@ service cloud.firestore {
              data.uid == request.auth.uid;
     }
 
+    function isValidTodo(data) {
+      return data.keys().hasAll(['id', 'company', 'type', 'dueDate', 'completed', 'dateAdded', 'uid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
+             data.type in ['Interview', 'Assignment', 'Other'] &&
+             isValidDateString(data.dueDate) &&
+             data.completed is bool &&
+             isValidDateString(data.dateAdded) &&
+             (!('dueTime' in data) || (data.dueTime is string && data.dueTime.matches("^\\d{2}:\\d{2}$"))) &&
+             (!('alertTriggered' in data) || data.alertTriggered is bool) &&
+             (!('thoughts' in data) || (data.thoughts is string && data.thoughts.size() < 5000)) &&
+             data.uid == request.auth.uid;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -206,6 +232,13 @@ service cloud.firestore {
       allow read: if isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidStoreItem(request.resource.data);
       allow update: if isDocOwner() && isValidStoreItem(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /todos/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidTodo(request.resource.data);
+      allow update: if isDocOwner() && isValidTodo(request.resource.data);
       allow delete: if isDocOwner() || isAdmin();
     }
 

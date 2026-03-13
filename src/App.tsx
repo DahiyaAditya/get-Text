@@ -8,6 +8,7 @@ import {
   MessageSquare, 
   Briefcase, 
   Hash,
+  CheckCircle2,
   LogOut,
   LogIn,
   User as UserIcon,
@@ -35,7 +36,8 @@ import {
   ReferralToGetItem, 
   ReferralGotItem,
   InterviewHistoryItem,
-  StoreItem
+  StoreItem,
+  TodoItem
 } from './types';
 
 // Components
@@ -45,6 +47,8 @@ import ReferralToGet from './components/ReferralToGet';
 import ReferralGot from './components/ReferralGot';
 import InterviewHistory from './components/InterviewHistory';
 import Store from './components/Store';
+import Todo from './components/Todo';
+import AlertSystem from './components/AlertSystem';
 import ErrorBoundary from './components/ErrorBoundary';
 
 enum OperationType {
@@ -113,6 +117,7 @@ function AppContent() {
   const [referralGotList, setReferralGotList] = useState<ReferralGotItem[]>([]);
   const [interviewHistoryList, setInterviewHistoryList] = useState<InterviewHistoryItem[]>([]);
   const [storeList, setStoreList] = useState<StoreItem[]>([]);
+  const [todoList, setTodoList] = useState<TodoItem[]>([]);
 
   // Auth Listener
   useEffect(() => {
@@ -182,12 +187,18 @@ function AppContent() {
       setStoreList(snapshot.docs.map(doc => doc.data() as StoreItem));
     }, (error) => handleFirestoreError(error, OperationType.LIST, 'store'));
 
+    const qTodos = query(collection(db, 'todos'), where('uid', '==', user.uid));
+    const unsubTodos = onSnapshot(qTodos, (snapshot) => {
+      setTodoList(snapshot.docs.map(doc => doc.data() as TodoItem));
+    }, (error) => handleFirestoreError(error, OperationType.LIST, 'todos'));
+
     return () => {
       unsubToApply();
       unsubToGet();
       unsubGot();
       unsubHistory();
       unsubStore();
+      unsubTodos();
     };
   }, [user]);
 
@@ -362,6 +373,46 @@ function AppContent() {
     }
   };
 
+  const addTodo = async (item: Omit<TodoItem, 'id' | 'uid' | 'dateAdded'>) => {
+    if (!user) return;
+    const id = crypto.randomUUID();
+    const newItem: TodoItem = {
+      ...item,
+      id,
+      dateAdded: new Date().toISOString(),
+      uid: user.uid
+    };
+    try {
+      await setDoc(doc(db, 'todos', id), newItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `todos/${id}`);
+    }
+  };
+
+  const updateTodo = async (id: string, updates: Partial<TodoItem>) => {
+    if (!user) return;
+    const item = todoList.find(i => i.id === id);
+    if (!item) return;
+    const updatedItem = { ...item, ...updates };
+    try {
+      await setDoc(doc(db, 'todos', id), updatedItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `todos/${id}`);
+    }
+  };
+
+  const deleteTodo = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, 'todos', id));
+    } catch (error) {
+      handleFirestoreError(error, OperationType.DELETE, `todos/${id}`);
+    }
+  };
+
+  const handleAlertTriggered = async (id: string) => {
+    await updateTodo(id, { alertTriggered: true });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#f5f5f5]">
@@ -401,61 +452,86 @@ function AppContent() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#1a1a1a] font-sans p-4 md:p-8">
-      <div className="max-w-5xl mx-auto">
-        {/* Main Header / Navigation */}
-        <header className="mb-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-3xl shadow-sm border border-black/5">
-            <div className="flex items-center gap-4 px-4">
-              <div className="w-10 h-10 bg-black text-white rounded-xl flex items-center justify-center shadow-sm">
-                <Briefcase className="w-5 h-5" />
+    <div className="min-h-screen bg-[#fafafa] text-[#111] font-sans">
+      <AlertSystem todos={todoList} onAlertTriggered={handleAlertTriggered} />
+      
+      {/* High-End Pro Header */}
+      <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-xl border-b border-gray-100">
+        <div className="max-w-[1440px] mx-auto h-16 px-4 md:px-8 flex items-center justify-between">
+          {/* Left: Brand & Breadcrumb */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('generator')}>
+              <div className="w-9 h-9 bg-black rounded-xl flex items-center justify-center shadow-lg shadow-black/10 group-hover:scale-105 transition-transform">
+                <Briefcase className="w-5 h-5 text-white" />
               </div>
-              <h1 className="text-2xl font-bold tracking-tight">Referral Hub</h1>
-            </div>
-            
-            <nav className="flex flex-wrap justify-center gap-2">
-              {[
-                { id: 'generator', label: 'Generator', icon: MessageSquare },
-                { id: 'to-apply', label: 'To Apply', icon: Briefcase },
-                { id: 'to-get', label: 'To Get', icon: Hash },
-                { id: 'got', label: 'Got', icon: Hash },
-                { id: 'history', label: 'History', icon: History },
-                { id: 'store', label: 'Store', icon: Hash },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as TabType)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-2xl text-sm font-medium transition-all ${
-                    activeTab === tab.id 
-                      ? 'bg-black text-white shadow-md' 
-                      : 'text-gray-500 hover:bg-gray-100'
-                  }`}
-                >
-                  <tab.icon className="w-4 h-4" />
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-
-            <div className="flex items-center gap-3 px-4 border-l border-gray-100 ml-2">
-              {user.photoURL ? (
-                <img src={user.photoURL} alt="User" className="w-8 h-8 rounded-full border border-gray-200" referrerPolicy="no-referrer" />
-              ) : (
-                <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                  <UserIcon className="w-4 h-4 text-gray-400" />
-                </div>
-              )}
-              <button 
-                onClick={logout}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+              <div className="flex flex-col leading-none">
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">Referral Hub</span>
+                <span className="text-sm font-bold text-black capitalize mt-0.5">{activeTab.replace('-', ' ')}</span>
+              </div>
             </div>
           </div>
-        </header>
 
+          {/* Center: Desktop Navigation (Segmented Control) */}
+          <nav className="hidden lg:flex items-center bg-gray-100/50 p-1 rounded-2xl border border-gray-200/50">
+            {[
+              { id: 'generator', label: 'Generator', icon: MessageSquare },
+              { id: 'to-apply', label: 'To Apply', icon: Briefcase },
+              { id: 'to-get', label: 'To Get', icon: Hash },
+              { id: 'got', label: 'Got', icon: Hash },
+              { id: 'history', label: 'History', icon: History },
+              { id: 'store', label: 'Store', icon: Hash },
+              { id: 'to-do', label: 'To-Do', icon: CheckCircle2 },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as TabType)}
+                className={`relative flex items-center gap-2 px-3 xl:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 ${
+                  activeTab === tab.id 
+                    ? 'text-black' 
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="headerNavActive"
+                    className="absolute inset-0 bg-white shadow-sm ring-1 ring-black/5 rounded-xl"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <tab.icon className={`w-3.5 h-3.5 relative z-10 ${activeTab === tab.id ? 'stroke-[2.5px]' : ''}`} />
+                <span className="relative z-10 hidden xl:inline">{tab.label}</span>
+              </button>
+            ))}
+          </nav>
+
+          {/* Right: User & Actions */}
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-3 pl-4 border-l border-gray-100">
+              <div className="flex flex-col items-end leading-none">
+                <span className="text-xs font-bold">{user.displayName?.split(' ')[0] || 'Member'}</span>
+                <span className="text-[9px] text-emerald-500 font-black uppercase tracking-widest mt-1">Pro Account</span>
+              </div>
+              {user.photoURL ? (
+                <img src={user.photoURL} alt="User" className="w-9 h-9 rounded-full border-2 border-white shadow-sm" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-9 h-9 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100">
+                  <UserIcon className="w-4 h-4 text-gray-300" />
+                </div>
+              )}
+            </div>
+            <button 
+              onClick={logout}
+              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-[1440px] mx-auto p-4 md:p-8 lg:p-12 pb-32 md:pb-12">
         <AnimatePresence mode="wait">
           {activeTab === 'generator' && (
             <motion.div
@@ -463,6 +539,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <ReferralGenerator 
                 prefill={prefillData} 
@@ -477,6 +554,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <ToApply 
                 list={toApplyList} 
@@ -493,6 +571,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <ReferralToGet 
                 list={referralToGetList}
@@ -508,6 +587,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <ReferralGot 
                 list={referralGotList}
@@ -522,6 +602,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <InterviewHistory 
                 list={interviewHistoryList}
@@ -538,6 +619,7 @@ function AppContent() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <Store 
                 list={storeList}
@@ -547,7 +629,46 @@ function AppContent() {
               />
             </motion.div>
           )}
+
+          {activeTab === 'to-do' && (
+            <motion.div
+              key="to-do"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Todo 
+                list={todoList}
+                onAdd={addTodo}
+                onUpdate={updateTodo}
+                onDelete={deleteTodo}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
+      </main>
+
+      {/* Mobile Navigation (Refined Bottom Bar) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-100 px-6 py-3 flex justify-between items-center shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        {[
+          { id: 'generator', icon: MessageSquare, label: 'Gen' },
+          { id: 'to-apply', icon: Briefcase, label: 'Apply' },
+          { id: 'to-do', icon: CheckCircle2, label: 'Tasks' },
+          { id: 'history', icon: History, label: 'History' },
+          { id: 'store', icon: Hash, label: 'Store' },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id as TabType)}
+            className={`flex flex-col items-center gap-1 transition-all ${
+              activeTab === tab.id ? 'text-black' : 'text-gray-400'
+            }`}
+          >
+            <tab.icon className={`w-6 h-6 ${activeTab === tab.id ? 'stroke-[2.5px]' : 'stroke-[2px]'}`} />
+            <span className="text-[10px] font-bold uppercase tracking-tight">{tab.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );

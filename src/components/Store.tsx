@@ -60,15 +60,15 @@ export default function Store({ list, onAdd, onUpdate, onDelete }: StoreProps) {
   return (
     <div className="space-y-6">
       {/* Add Section */}
-      <div className="bg-white p-6 rounded-[32px] shadow-sm border border-black/5">
-        <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+      <div className="bg-white p-5 md:p-6 rounded-[32px] shadow-sm border border-black/5">
+        <h2 className="text-lg md:text-xl font-bold mb-4 flex items-center gap-2">
           <Plus className="w-5 h-5" />
           Add to Store
         </h2>
         <form onSubmit={handleAdd} className="space-y-4">
           <textarea
             placeholder="Enter text to store..."
-            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all min-h-[120px] resize-y"
+            className="w-full px-4 py-4 md:py-3 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-black/5 transition-all min-h-[120px] resize-y text-sm"
             value={newContent}
             onChange={(e) => setNewContent(e.target.value)}
           />
@@ -76,7 +76,7 @@ export default function Store({ list, onAdd, onUpdate, onDelete }: StoreProps) {
             <button
               type="submit"
               disabled={!newContent.trim()}
-              className="bg-black text-white px-8 py-3 rounded-xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="w-full md:w-auto bg-black text-white px-8 py-4 md:py-3 rounded-2xl font-bold hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md"
             >
               <Plus className="w-5 h-5" />
               Store Text
@@ -140,14 +140,14 @@ export default function Store({ list, onAdd, onUpdate, onDelete }: StoreProps) {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-grow whitespace-pre-wrap text-gray-700 leading-relaxed">
+                    <div className="flex flex-col md:flex-row items-start justify-between gap-4">
+                      <div className="flex-grow whitespace-pre-wrap text-sm text-gray-700 leading-relaxed w-full">
                         {item.content}
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity self-end md:self-start">
                         <button
                           onClick={() => handleCopy(item.id, item.content)}
-                          className={`p-2 rounded-lg transition-all ${
+                          className={`p-2.5 rounded-xl transition-all ${
                             copiedId === item.id 
                               ? 'text-green-500 bg-green-50' 
                               : 'text-gray-400 hover:text-black hover:bg-gray-50'
@@ -158,21 +158,21 @@ export default function Store({ list, onAdd, onUpdate, onDelete }: StoreProps) {
                         </button>
                         <button
                           onClick={() => startEditing(item)}
-                          className="p-2 text-gray-400 hover:text-black hover:bg-gray-50 rounded-lg transition-all"
+                          className="p-2.5 text-gray-400 hover:text-black hover:bg-gray-50 rounded-xl transition-all"
                           title="Edit text"
                         >
                           <Edit2 className="w-5 h-5" />
                         </button>
                         <button
                           onClick={() => onDelete(item.id)}
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                           title="Delete"
                         >
                           <Trash2 className="w-5 h-5" />
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono uppercase tracking-wider">
+                    <div className="flex items-center gap-2 text-[10px] text-gray-400 font-mono uppercase tracking-wider border-t border-gray-50 pt-3">
                       <Clock className="w-3 h-3" />
                       {new Date(item.dateAdded).toLocaleString()}
                     </div>
