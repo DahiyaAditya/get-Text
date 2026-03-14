@@ -120,6 +120,19 @@
         "uid": { "type": "string" }
       },
       "required": ["id", "company", "type", "dueDate", "completed", "dateAdded", "uid"]
+    },
+    "CustomMessageType": {
+      "title": "Custom Message Type",
+      "description": "A user-defined message template for referral generation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "content": { "type": "string" },
+        "icon": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "label", "content", "uid"]
     }
   },
   "firestore": {
@@ -150,6 +163,10 @@
     "/todos/{itemId}": {
       "schema": "TodoItem",
       "description": "Collection of to-do tasks for interviews and assignments."
+    },
+    "/messageTypes/{itemId}": {
+      "schema": "CustomMessageType",
+      "description": "Collection of custom message templates for the referral generator."
     }
   }
 }

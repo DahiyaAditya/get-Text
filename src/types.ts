@@ -1,5 +1,13 @@
-export type MessageType = 'new' | 'ask' | 'thanks' | 'after' | 'closed';
+export type MessageType = string;
 export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store' | 'to-do';
+
+export interface CustomMessageType {
+  id: string;
+  label: string;
+  content: string;
+  icon?: string;
+  uid?: string;
+}
 
 export interface InterviewRound {
   type: 'Assignment' | 'Interview' | 'HR' | 'Technical' | 'Managerial';

@@ -190,6 +190,17 @@ service cloud.firestore {
              data.uid == request.auth.uid;
     }
 
+    function isValidMessageType(data) {
+      return data.keys().hasAll(['label', 'content', 'uid']) &&
+             data.label is string && data.label.size() > 0 && data.label.size() < 100 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 10000 &&
+             (!('id' in data) || (data.id is string && data.id.size() < 100)) &&
+             (!('icon' in data) || (data.icon is string && data.icon.size() < 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp) &&
+             data.uid == request.auth.uid;
+    }
+
     // ===============================================================
     // Rules
     // ===============================================================
@@ -239,6 +250,13 @@ service cloud.firestore {
       allow read: if isDocOwner() || isAdmin();
       allow create: if isAuthenticated() && isValidTodo(request.resource.data);
       allow update: if isDocOwner() && isValidTodo(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /messageTypes/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidMessageType(request.resource.data);
+      allow update: if isDocOwner() && isValidMessageType(request.resource.data);
       allow delete: if isDocOwner() || isAdmin();
     }
 
