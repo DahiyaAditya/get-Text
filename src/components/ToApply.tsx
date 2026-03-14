@@ -19,6 +19,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
   const [isResultModalOpen, setIsResultModalOpen] = useState(false);
   const [jobUrl, setJobUrl] = useState('');
   const [isParsing, setIsParsing] = useState(false);
+  const [isViewingParsedData, setIsViewingParsedData] = useState(false);
   const [parsingError, setParsingError] = useState<string | null>(null);
   const [parsedJob, setParsedJob] = useState<any>(null);
 
@@ -315,9 +316,10 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                             onClick={() => {
                               setParsedJob(item.parsedData);
                               setJobUrl(item.link);
+                              setIsViewingParsedData(true);
                               setIsResultModalOpen(true);
                             }}
-                            className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-all"
+                            className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-all border border-blue-100 shadow-sm"
                             title="View Parsed Data"
                           >
                             <Info className="w-3 h-3" />
@@ -402,9 +404,10 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                         onClick={() => {
                           setParsedJob(item.parsedData);
                           setJobUrl(item.link);
+                          setIsViewingParsedData(true);
                           setIsResultModalOpen(true);
                         }}
-                        className="text-blue-600 font-bold text-xs flex items-center gap-1 ml-2"
+                        className="text-blue-600 font-bold text-xs flex items-center gap-1 ml-2 bg-blue-50 px-2 py-1 rounded-md border border-blue-100"
                       >
                         Parse Data <Info className="w-3 h-3" />
                       </button>
@@ -508,14 +511,14 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
               <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-emerald-50/30">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center">
-                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                    {isViewingParsedData ? <Info className="w-6 h-6 text-emerald-600" /> : <CheckCircle2 className="w-6 h-6 text-emerald-600" />}
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold">Job Details Parsed</h2>
-                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mt-0.5">AI Analysis Complete</p>
+                    <h2 className="text-xl font-bold">{isViewingParsedData ? 'Saved Job Details' : 'Job Details Parsed'}</h2>
+                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mt-0.5">{isViewingParsedData ? 'Stored AI Analysis' : 'AI Analysis Complete'}</p>
                   </div>
                 </div>
-                <button onClick={() => setIsResultModalOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors">
+                <button onClick={() => { setIsResultModalOpen(false); setIsViewingParsedData(false); }} className="p-2 hover:bg-white rounded-full transition-colors">
                   <X className="w-6 h-6 text-gray-400" />
                 </button>
               </div>
@@ -557,33 +560,6 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                 </div>
 
                 <div className="space-y-4">
-                  <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100 space-y-4">
-                    <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
-                      <Building2 className="w-4 h-4" /> Company Insights
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Employees</p>
-                        <p className="text-sm font-bold text-blue-900">{parsedJob.employeeCount || 'Not specified'}</p>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">LinkedIn Profile</p>
-                        {parsedJob.linkedinUrl ? (
-                          <a 
-                            href={parsedJob.linkedinUrl} 
-                            target="_blank" 
-                            rel="noreferrer" 
-                            className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1"
-                          >
-                            Visit Page <LinkIcon className="w-3 h-3" />
-                          </a>
-                        ) : (
-                          <p className="text-sm text-blue-400 italic">Not specified</p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="space-y-2">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Key Technologies</p>
                     <div className="flex flex-wrap gap-2">
@@ -610,22 +586,61 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                       <p className="text-sm text-gray-700 leading-relaxed">{parsedJob.descriptionSummary || 'No summary available.'}</p>
                     </div>
                   </div>
+
+                  {/* Company Insights at the end */}
+                  <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100 space-y-4 mt-6">
+                    <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                      <Building2 className="w-4 h-4" /> Company Information
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">No. of Employees</p>
+                        <p className="text-sm font-bold text-blue-900">{parsedJob.employeeCount || 'Not specified'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">LinkedIn Page</p>
+                        {parsedJob.linkedinUrl ? (
+                          <a 
+                            href={parsedJob.linkedinUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            Visit LinkedIn <LinkIcon className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-sm text-blue-400 italic">Not specified</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <div className="p-8 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
-                <button 
-                  onClick={() => setIsResultModalOpen(false)}
-                  className="flex-1 px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
-                >
-                  Discard
-                </button>
-                <button 
-                  onClick={handleAddParsedJob}
-                  className="flex-1 bg-black text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Plus className="w-5 h-5" /> Add to List
-                </button>
+                {isViewingParsedData ? (
+                  <button 
+                    onClick={() => { setIsResultModalOpen(false); setIsViewingParsedData(false); }}
+                    className="w-full bg-black text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg"
+                  >
+                    Close
+                  </button>
+                ) : (
+                  <>
+                    <button 
+                      onClick={() => setIsResultModalOpen(false)}
+                      className="flex-1 px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                    >
+                      Discard
+                    </button>
+                    <button 
+                      onClick={handleAddParsedJob}
+                      className="flex-1 bg-black text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                    >
+                      <Plus className="w-5 h-5" /> Add to List
+                    </button>
+                  </>
+                )}
               </div>
             </motion.div>
           </div>
