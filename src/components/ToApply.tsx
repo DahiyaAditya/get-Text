@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Link as LinkIcon, Trash2, Wand2, Plus, Calendar, Building2, Briefcase, Hash } from 'lucide-react';
+import { Link as LinkIcon, Trash2, Wand2, Plus, Calendar, Building2, Briefcase, Hash, Sparkles, X, Loader2, Info, CheckCircle2 } from 'lucide-react';
 import { ToApplyItem } from '../types';
 import { formatDate } from '../utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { GoogleGenAI, Type } from "@google/genai";
 
 interface ToApplyProps {
   list: ToApplyItem[];
@@ -14,6 +15,13 @@ interface ToApplyProps {
 export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyProps) {
   const getToday = () => new Date().toISOString().split('T')[0];
   const [isAdding, setIsAdding] = useState(false);
+  const [isParsingModalOpen, setIsParsingModalOpen] = useState(false);
+  const [isResultModalOpen, setIsResultModalOpen] = useState(false);
+  const [jobUrl, setJobUrl] = useState('');
+  const [isParsing, setIsParsing] = useState(false);
+  const [parsingError, setParsingError] = useState<string | null>(null);
+  const [parsedJob, setParsedJob] = useState<any>(null);
+
   const [newToApply, setNewToApply] = useState({ 
     company: '', 
     position: '',
@@ -32,22 +40,111 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
     setIsAdding(false);
   };
 
+  const handleParseJob = async () => {
+    if (!jobUrl) return;
+    setIsParsing(true);
+    setParsingError(null);
+
+    try {
+      const apiKey = process.env.GEMINI_API_KEY;
+      if (!apiKey) throw new Error('Gemini API key is not configured.');
+
+      const ai = new GoogleGenAI({ apiKey });
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Parse this job opening link and extract all relevant details: ${jobUrl}. 
+        Please provide the details in a structured format.`,
+        config: {
+          tools: [{ urlContext: {} }],
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              company: { type: Type.STRING, description: "Name of the company" },
+              position: { type: Type.STRING, description: "Job title/position" },
+              jobId: { type: Type.STRING, description: "Unique job identification number" },
+              location: { type: Type.STRING, description: "Job location" },
+              postedDate: { type: Type.STRING, description: "Date when the job was posted" },
+              lastDateToApply: { type: Type.STRING, description: "Deadline for application (YYYY-MM-DD format if possible)" },
+              experienceRequired: { type: Type.STRING, description: "Years of experience needed" },
+              roleLevel: { type: Type.STRING, description: "Level of the role (e.g., SDE II, Senior, etc.)" },
+              keyTech: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key technologies mentioned" },
+              workModel: { type: Type.STRING, description: "Work model (Remote, Hybrid, On-site)" },
+              descriptionSummary: { type: Type.STRING, description: "A brief summary of the role and responsibilities" },
+            },
+            required: ["company", "position"]
+          }
+        }
+      });
+
+      const result = JSON.parse(response.text);
+      setParsedJob(result);
+      setIsParsingModalOpen(false);
+      setIsResultModalOpen(true);
+    } catch (error: any) {
+      console.error('Parsing Error:', error);
+      setParsingError(error.message || 'Failed to parse the job link. Please try again.');
+    } finally {
+      setIsParsing(false);
+    }
+  };
+
+  const handleAddParsedJob = () => {
+    if (!parsedJob) return;
+    
+    // Attempt to parse lastDateToApply to YYYY-MM-DD if it's not already
+    let lastDate = parsedJob.lastDateToApply || '';
+    if (lastDate && !/^\d{4}-\d{2}-\d{2}$/.test(lastDate)) {
+      // If it's not in the right format, we might want to default to today or try to normalize
+      // For now, let's just use it or default to today if it's completely invalid
+      const parsed = new Date(lastDate);
+      if (!isNaN(parsed.getTime())) {
+        lastDate = parsed.toISOString().split('T')[0];
+      } else {
+        lastDate = getToday();
+      }
+    } else if (!lastDate) {
+      lastDate = getToday();
+    }
+
+    onAdd(
+      parsedJob.company,
+      parsedJob.position,
+      parsedJob.jobId || '',
+      jobUrl,
+      getToday(),
+      lastDate
+    );
+    
+    setIsResultModalOpen(false);
+    setParsedJob(null);
+    setJobUrl('');
+  };
+
   return (
     <div className="space-y-6">
       <div className="bg-white p-5 md:p-8 rounded-[32px] shadow-sm border border-black/5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
           <div>
             <h2 className="text-xl md:text-2xl font-bold tracking-tight">Companies To Apply</h2>
             <p className="text-sm text-gray-500 mt-1">Track your job applications and generate referral requests.</p>
           </div>
-          <button 
-            onClick={() => setIsAdding(!isAdding)}
-            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-3 sm:py-2.5 rounded-2xl text-sm font-bold transition-all ${
-              isAdding ? 'bg-gray-100 text-gray-600' : 'bg-black text-white shadow-md hover:bg-gray-800'
-            }`}
-          >
-            {isAdding ? 'Cancel' : <><Plus className="w-4 h-4" /> Add Company</>}
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <button 
+              onClick={() => setIsParsingModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all border border-emerald-100"
+            >
+              <Sparkles className="w-4 h-4" /> Parse Job
+            </button>
+            <button 
+              onClick={() => setIsAdding(!isAdding)}
+              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-bold transition-all ${
+                isAdding ? 'bg-gray-100 text-gray-600' : 'bg-black text-white shadow-md hover:bg-gray-800'
+              }`}
+            >
+              {isAdding ? 'Cancel' : <><Plus className="w-4 h-4" /> Add Company</>}
+            </button>
+          </div>
         </div>
 
         <AnimatePresence>
@@ -293,6 +390,186 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
           )}
         </div>
       </div>
+
+      {/* Parse Job Modal */}
+      <AnimatePresence>
+        {isParsingModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsParsingModalOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-[40px] shadow-2xl overflow-hidden p-8"
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-emerald-500" /> Parse Job Opening
+                </h2>
+                <button onClick={() => setIsParsingModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <p className="text-sm text-gray-500">Paste the job listing URL below. Our AI will extract all the important details for you.</p>
+                
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-gray-400 uppercase px-1">Job Link</label>
+                  <div className="relative">
+                    <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <input 
+                      type="url" 
+                      placeholder="https://linkedin.com/jobs/view/..."
+                      className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                      value={jobUrl}
+                      onChange={(e) => setJobUrl(e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                {parsingError && (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 text-xs font-medium">
+                    {parsingError}
+                  </div>
+                )}
+
+                <button 
+                  onClick={handleParseJob}
+                  disabled={isParsing || !jobUrl}
+                  className="w-full bg-black text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isParsing ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+                  {isParsing ? 'Parsing Listing...' : 'Parse Details'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Result Modal */}
+      <AnimatePresence>
+        {isResultModalOpen && parsedJob && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsResultModalOpen(false)}
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative w-full max-w-2xl bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            >
+              <div className="p-8 border-b border-gray-100 flex justify-between items-center bg-emerald-50/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center">
+                    <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold">Job Details Parsed</h2>
+                    <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest mt-0.5">AI Analysis Complete</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsResultModalOpen(false)} className="p-2 hover:bg-white rounded-full transition-colors">
+                  <X className="w-6 h-6 text-gray-400" />
+                </button>
+              </div>
+
+              <div className="p-8 overflow-y-auto space-y-8 no-scrollbar">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Company</p>
+                    <p className="text-lg font-bold text-gray-900">{parsedJob.company}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Position</p>
+                    <p className="text-lg font-bold text-gray-900">{parsedJob.position}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Job ID</p>
+                    <p className="font-mono text-gray-700">{parsedJob.jobId || 'Not specified'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Location</p>
+                    <p className="text-gray-700">{parsedJob.location || 'Not specified'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Posted Date</p>
+                    <p className="text-gray-700">{parsedJob.postedDate || 'Not specified'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Deadline</p>
+                    <p className="text-orange-600 font-bold">{parsedJob.lastDateToApply || 'Not specified'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Experience</p>
+                    <p className="text-gray-700">{parsedJob.experienceRequired || 'Not specified'}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Role Level</p>
+                    <p className="text-gray-700">{parsedJob.roleLevel || 'Not specified'}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Key Technologies</p>
+                    <div className="flex flex-wrap gap-2">
+                      {parsedJob.keyTech && parsedJob.keyTech.length > 0 ? (
+                        parsedJob.keyTech.map((tech: string, i: number) => (
+                          <span key={i} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-medium border border-gray-200">
+                            {tech}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400 italic">None specified</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Work Model</p>
+                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-xl border border-gray-100">{parsedJob.workModel || 'Not specified'}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Role Summary</p>
+                    <div className="bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                      <p className="text-sm text-gray-700 leading-relaxed">{parsedJob.descriptionSummary || 'No summary available.'}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-8 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={() => setIsResultModalOpen(false)}
+                  className="flex-1 px-6 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
+                >
+                  Discard
+                </button>
+                <button 
+                  onClick={handleAddParsedJob}
+                  className="flex-1 bg-black text-white px-6 py-4 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <Plus className="w-5 h-5" /> Add to List
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
