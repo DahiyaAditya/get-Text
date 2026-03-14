@@ -649,26 +649,30 @@ function AppContent() {
         </AnimatePresence>
       </main>
 
-      {/* Mobile Navigation (Refined Bottom Bar) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-100 px-6 py-3 flex justify-between items-center shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-        {[
-          { id: 'generator', icon: MessageSquare, label: 'Gen' },
-          { id: 'to-apply', icon: Briefcase, label: 'Apply' },
-          { id: 'to-do', icon: CheckCircle2, label: 'Tasks' },
-          { id: 'history', icon: History, label: 'History' },
-          { id: 'store', icon: Hash, label: 'Store' },
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id as TabType)}
-            className={`flex flex-col items-center gap-1 transition-all ${
-              activeTab === tab.id ? 'text-black' : 'text-gray-400'
-            }`}
-          >
-            <tab.icon className={`w-6 h-6 ${activeTab === tab.id ? 'stroke-[2.5px]' : 'stroke-[2px]'}`} />
-            <span className="text-[10px] font-bold uppercase tracking-tight">{tab.label}</span>
-          </button>
-        ))}
+      {/* Mobile Navigation (Scrollable Bottom Bar) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-gray-100 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
+        <div className="flex overflow-x-auto no-scrollbar items-center gap-8 px-8 py-3">
+          {[
+            { id: 'generator', icon: MessageSquare, label: 'Gen' },
+            { id: 'to-apply', icon: Briefcase, label: 'Apply' },
+            { id: 'to-get', icon: Hash, label: 'To Get' },
+            { id: 'got', icon: Hash, label: 'Got' },
+            { id: 'to-do', icon: CheckCircle2, label: 'Tasks' },
+            { id: 'history', icon: History, label: 'History' },
+            { id: 'store', icon: Hash, label: 'Store' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as TabType)}
+              className={`flex flex-col items-center gap-1 transition-all shrink-0 ${
+                activeTab === tab.id ? 'text-black' : 'text-gray-400'
+              }`}
+            >
+              <tab.icon className={`w-6 h-6 ${activeTab === tab.id ? 'stroke-[2.5px]' : 'stroke-[2px]'}`} />
+              <span className="text-[10px] font-bold uppercase tracking-tight whitespace-nowrap">{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
