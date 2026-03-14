@@ -47,7 +47,9 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
 
     try {
       const apiKey = process.env.GEMINI_API_KEY;
-      if (!apiKey) throw new Error('Gemini API key is not configured.');
+      if (!apiKey || apiKey === 'undefined' || apiKey === 'MY_GEMINI_API_KEY') {
+        throw new Error('Gemini API key is not configured. If you are hosting this yourself, please set the GEMINI_API_KEY environment variable in your hosting provider\'s dashboard.');
+      }
 
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
