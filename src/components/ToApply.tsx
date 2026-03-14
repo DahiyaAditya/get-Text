@@ -7,7 +7,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 
 interface ToApplyProps {
   list: ToApplyItem[];
-  onAdd: (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string) => void;
+  onAdd: (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string, parsedData?: any) => void;
   onDelete: (id: string) => void;
   onGenerate: (item: ToApplyItem) => void;
 }
@@ -35,7 +35,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
     if (!newToApply.company || !newToApply.position) return;
     const dateAdded = newToApply.dateAdded || getToday();
     const lastDate = newToApply.lastDate || getToday();
-    onAdd(newToApply.company, newToApply.position, newToApply.jobId, newToApply.link, dateAdded, lastDate);
+    onAdd(newToApply.company, newToApply.position, newToApply.jobId, newToApply.link, dateAdded, lastDate, null);
     setNewToApply({ company: '', position: '', jobId: '', link: '', dateAdded: getToday(), lastDate: '' });
     setIsAdding(false);
   };
@@ -73,6 +73,8 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
               keyTech: { type: Type.ARRAY, items: { type: Type.STRING }, description: "List of key technologies mentioned" },
               workModel: { type: Type.STRING, description: "Work model (Remote, Hybrid, On-site)" },
               descriptionSummary: { type: Type.STRING, description: "A brief summary of the role and responsibilities" },
+              employeeCount: { type: Type.STRING, description: "Approximate number of employees in the company" },
+              linkedinUrl: { type: Type.STRING, description: "URL to the company's LinkedIn page" },
             },
             required: ["company", "position"]
           }
@@ -115,7 +117,8 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
       parsedJob.jobId || '',
       jobUrl,
       getToday(),
-      lastDate
+      lastDate,
+      parsedJob
     );
     
     setIsResultModalOpen(false);
@@ -307,6 +310,20 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        {item.parsedData && (
+                          <button 
+                            onClick={() => {
+                              setParsedJob(item.parsedData);
+                              setJobUrl(item.link);
+                              setIsResultModalOpen(true);
+                            }}
+                            className="flex items-center gap-1.5 bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-all"
+                            title="View Parsed Data"
+                          >
+                            <Info className="w-3 h-3" />
+                            PARSE DATA
+                          </button>
+                        )}
                         <button 
                           onClick={() => onGenerate(item)}
                           className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg text-[10px] font-bold hover:bg-emerald-100 transition-all"
@@ -368,16 +385,31 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                 </div>
 
                 <div className="flex items-center justify-between gap-3 pt-2">
-                  {item.link ? (
-                    <a 
-                      href={item.link} 
-                      target="_blank" 
-                      rel="noreferrer" 
-                      className="text-blue-600 font-bold text-xs flex items-center gap-1"
-                    >
-                      Apply Link <LinkIcon className="w-3 h-3" />
-                    </a>
-                  ) : <span className="text-xs text-gray-300 italic">No link</span>}
+                  <div className="flex items-center gap-2">
+                    {item.link ? (
+                      <a 
+                        href={item.link} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        className="text-blue-600 font-bold text-xs flex items-center gap-1"
+                      >
+                        Apply Link <LinkIcon className="w-3 h-3" />
+                      </a>
+                    ) : <span className="text-xs text-gray-300 italic">No link</span>}
+                    
+                    {item.parsedData && (
+                      <button 
+                        onClick={() => {
+                          setParsedJob(item.parsedData);
+                          setJobUrl(item.link);
+                          setIsResultModalOpen(true);
+                        }}
+                        className="text-blue-600 font-bold text-xs flex items-center gap-1 ml-2"
+                      >
+                        Parse Data <Info className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                   
                   <button 
                     onClick={() => onGenerate(item)}
@@ -525,6 +557,33 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                 </div>
 
                 <div className="space-y-4">
+                  <div className="p-6 bg-blue-50/50 rounded-3xl border border-blue-100 space-y-4">
+                    <h3 className="text-sm font-bold text-blue-900 flex items-center gap-2">
+                      <Building2 className="w-4 h-4" /> Company Insights
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Employees</p>
+                        <p className="text-sm font-bold text-blue-900">{parsedJob.employeeCount || 'Not specified'}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-blue-400 uppercase tracking-wider">LinkedIn Profile</p>
+                        {parsedJob.linkedinUrl ? (
+                          <a 
+                            href={parsedJob.linkedinUrl} 
+                            target="_blank" 
+                            rel="noreferrer" 
+                            className="text-sm font-bold text-blue-600 hover:underline flex items-center gap-1"
+                          >
+                            Visit Page <LinkIcon className="w-3 h-3" />
+                          </a>
+                        ) : (
+                          <p className="text-sm text-blue-400 italic">Not specified</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Key Technologies</p>
                     <div className="flex flex-wrap gap-2">

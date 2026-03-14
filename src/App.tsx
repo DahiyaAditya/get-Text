@@ -203,7 +203,7 @@ function AppContent() {
   }, [user]);
 
   // Actions
-  const addToApply = async (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string) => {
+  const addToApply = async (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string, parsedData?: any) => {
     if (!user) return;
     const id = crypto.randomUUID();
     const item: ToApplyItem & { uid: string } = { 
@@ -214,6 +214,7 @@ function AppContent() {
       link: link || '', 
       dateAdded: dateAdded || new Date().toISOString().split('T')[0], 
       lastDate: lastDate || new Date().toISOString().split('T')[0], 
+      parsedData: parsedData || null,
       uid: user.uid 
     };
     
