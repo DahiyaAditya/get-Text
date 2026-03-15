@@ -12,7 +12,8 @@ import {
   LogOut,
   LogIn,
   User as UserIcon,
-  History
+  History,
+  Search
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -48,6 +49,7 @@ import ReferralGot from './components/ReferralGot';
 import InterviewHistory from './components/InterviewHistory';
 import Store from './components/Store';
 import Todo from './components/Todo';
+import Jobs from './components/Jobs';
 import AlertSystem from './components/AlertSystem';
 import ErrorBoundary from './components/ErrorBoundary';
 
@@ -494,6 +496,7 @@ function AppContent() {
               { id: 'history', label: 'History', icon: History },
               { id: 'store', label: 'Store', icon: Hash },
               { id: 'to-do', label: 'To-Do', icon: CheckCircle2 },
+              { id: 'jobs', label: 'Jobs', icon: Search },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -644,6 +647,18 @@ function AppContent() {
             </motion.div>
           )}
 
+          {activeTab === 'jobs' && (
+            <motion.div
+              key="jobs"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Jobs />
+            </motion.div>
+          )}
+
           {activeTab === 'to-do' && (
             <motion.div
               key="to-do"
@@ -672,6 +687,7 @@ function AppContent() {
             { id: 'to-get', icon: Hash, label: 'To Get' },
             { id: 'got', icon: Hash, label: 'Got' },
             { id: 'to-do', icon: CheckCircle2, label: 'Tasks' },
+            { id: 'jobs', icon: Search, label: 'Jobs' },
             { id: 'history', icon: History, label: 'History' },
             { id: 'store', icon: Hash, label: 'Store' },
           ].map((tab) => (

@@ -1,5 +1,5 @@
 export type MessageType = string;
-export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store' | 'to-do';
+export type TabType = 'generator' | 'to-apply' | 'to-get' | 'got' | 'history' | 'store' | 'to-do' | 'jobs';
 
 export interface CustomMessageType {
   id: string;
@@ -81,6 +81,19 @@ export interface TodoItem {
   alertTriggered?: boolean;
   dateAdded: string;
   uid?: string;
+}
+
+export interface JobSearchResult {
+  id: string;
+  company: string;
+  position: string;
+  location: string;
+  link: string;
+  postedDate: string;
+  experienceRequired: string;
+  descriptionSummary: string;
+  keyTech: string[];
+  relevanceScore: number;
 }
 
 export const FIXED_MAIL = "aditya995407@gmail.com";
