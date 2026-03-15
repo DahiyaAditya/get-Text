@@ -260,6 +260,18 @@ function AppContent() {
     }
   };
 
+  const updateToApply = async (id: string, updates: Partial<ToApplyItem>) => {
+    if (!user) return;
+    const item = toApplyList.find(i => i.id === id);
+    if (!item) return;
+    const updatedItem = { ...item, ...updates, uid: user.uid };
+    try {
+      await setDoc(doc(db, 'toApply', id), updatedItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `toApply/${id}`);
+    }
+  };
+
   const addToGetManual = async (company: string, position: string, jobId: string, lastDate: string) => {
     if (!user) return;
     const id = crypto.randomUUID();
@@ -561,6 +573,7 @@ function AppContent() {
                 list={toApplyList} 
                 onAdd={addToApply} 
                 onDelete={deleteToApply} 
+                onUpdate={updateToApply}
                 onGenerate={handleGenerateFromApply}
               />
             </motion.div>

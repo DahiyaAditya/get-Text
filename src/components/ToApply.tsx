@@ -9,10 +9,11 @@ interface ToApplyProps {
   list: ToApplyItem[];
   onAdd: (company: string, position: string, jobId: string, link: string, dateAdded: string, lastDate: string, parsedData?: any) => void;
   onDelete: (id: string) => void;
+  onUpdate: (id: string, updates: Partial<ToApplyItem>) => void;
   onGenerate: (item: ToApplyItem) => void;
 }
 
-export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyProps) {
+export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }: ToApplyProps) {
   const getToday = () => new Date().toISOString().split('T')[0];
   const [isAdding, setIsAdding] = useState(false);
   const [isParsingModalOpen, setIsParsingModalOpen] = useState(false);
@@ -256,6 +257,7 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
             <thead>
               <tr className="bg-gray-50/50 border-b border-gray-100">
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">Company & Position</th>
+                <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">Status</th>
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">Job ID</th>
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">Apply Link</th>
                 <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-wider text-gray-400">Added Date</th>
@@ -275,11 +277,26 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
                 </tr>
               ) : (
                 list.map((item) => (
-                  <tr key={item.id} className="hover:bg-gray-50/50 transition-colors group">
+                  <tr 
+                    key={item.id} 
+                    className={`transition-colors group ${
+                      item.applied ? 'bg-emerald-50/50 hover:bg-emerald-100/50' : 'hover:bg-gray-50/50'
+                    }`}
+                  >
                     <td className="px-6 py-4">
                       <div className="flex flex-col">
                         <span className="font-bold text-gray-900">{item.company}</span>
                         <span className="text-xs text-gray-500">{item.position}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center">
+                        <input 
+                          type="checkbox" 
+                          checked={item.applied || false}
+                          onChange={(e) => onUpdate(item.id, { applied: e.target.checked })}
+                          className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        />
                       </div>
                     </td>
                     <td className="px-6 py-4">
@@ -359,11 +376,24 @@ export default function ToApply({ list, onAdd, onDelete, onGenerate }: ToApplyPr
             </div>
           ) : (
             list.map((item) => (
-              <div key={item.id} className="bg-gray-50 p-5 rounded-2xl border border-gray-100 space-y-4">
+              <div 
+                key={item.id} 
+                className={`p-5 rounded-2xl border transition-colors space-y-4 ${
+                  item.applied ? 'bg-emerald-50 border-emerald-100' : 'bg-gray-50 border-gray-100'
+                }`}
+              >
                 <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{item.company}</h3>
-                    <p className="text-xs text-gray-500">{item.position}</p>
+                  <div className="flex items-start gap-3">
+                    <input 
+                      type="checkbox" 
+                      checked={item.applied || false}
+                      onChange={(e) => onUpdate(item.id, { applied: e.target.checked })}
+                      className="mt-1 w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div>
+                      <h3 className="font-bold text-gray-900">{item.company}</h3>
+                      <p className="text-xs text-gray-500">{item.position}</p>
+                    </div>
                   </div>
                   <button 
                     onClick={() => onDelete(item.id)}

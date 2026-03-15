@@ -43,6 +43,7 @@ export interface ToApplyItem {
   dateAdded: string;
   lastDate: string;
   parsedData?: any;
+  applied?: boolean;
 }
 
 export interface ReferralToGetItem {
