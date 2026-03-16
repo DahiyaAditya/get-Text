@@ -48,16 +48,16 @@ export default function Jobs() {
       Current System Time: ${currentTime}
       User Profile: ${RESUME_CONTEXT}
       
-      Task: Search the web for the latest job openings that are highly relevant to this user's professional profile. 
+      Task: Search LinkedIn ONLY for the latest job openings that are highly relevant to this user's professional profile. 
       Focus on Frontend Developer, React.js, and Next.js roles. 
-      Include roles from major portals like LinkedIn, Indeed, Glassdoor, etc.
+      ONLY include roles from LinkedIn (linkedin.com).
       
-      Return a list of at least 5 real, current job openings.
+      Return a list of at least 5 real, current job openings from LinkedIn.
       For each job, provide:
       - company name
       - position title
       - location
-      - direct link to the opening
+      - direct link to the opening (must be a linkedin.com URL)
       - posted date (relative or absolute)
       - experience required (e.g. "3+ years", "Mid-level")
       - a brief description summary
@@ -97,7 +97,16 @@ export default function Jobs() {
       setResults(data);
     } catch (err: any) {
       console.error('Search error:', err);
-      setError(err.message || 'Failed to search for jobs. Please try again.');
+      let userMessage = 'Failed to search for jobs. Please try again.';
+      
+      // Handle 429 Resource Exhausted
+      if (err.message?.includes('429') || err.message?.includes('RESOURCE_EXHAUSTED')) {
+        userMessage = 'The AI search is currently at its limit. Please wait a minute and try again.';
+      } else if (err.message?.includes('API key')) {
+        userMessage = 'API configuration error. Please check your settings.';
+      }
+      
+      setError(userMessage);
     } finally {
       setIsSearching(false);
     }
@@ -114,16 +123,16 @@ export default function Jobs() {
       <div className="bg-white p-8 rounded-[32px] shadow-sm border border-black/5">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Relevant Job Openings</h2>
-            <p className="text-sm text-gray-500 mt-1">Latest opportunities based on your professional profile.</p>
+            <h2 className="text-2xl font-bold tracking-tight">LinkedIn Job Openings</h2>
+            <p className="text-sm text-gray-500 mt-1">Latest opportunities from LinkedIn based on your profile.</p>
           </div>
           <button 
             onClick={handleSearch}
             disabled={isSearching}
-            className="bg-black text-white px-8 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-gray-800 transition-all shadow-lg shadow-black/10 disabled:opacity-50"
+            className="bg-[#0077b5] text-white px-8 py-4 rounded-2xl font-bold text-sm flex items-center justify-center gap-3 hover:bg-[#006097] transition-all shadow-lg shadow-blue-900/10 disabled:opacity-50"
           >
             {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-            Refresh Latest Jobs
+            Refresh LinkedIn Jobs
           </button>
         </div>
       </div>
@@ -150,9 +159,20 @@ export default function Jobs() {
             </div>
           </div>
         ) : error ? (
-          <div className="bg-red-50 p-8 rounded-[32px] border border-red-100 text-center">
-            <p className="text-sm text-red-600 font-medium">{error}</p>
-            <button onClick={handleSearch} className="mt-4 text-xs font-bold text-red-700 underline">Try Again</button>
+          <div className="bg-white p-12 rounded-[40px] border border-black/5 text-center flex flex-col items-center gap-4">
+            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center">
+              <Info className="w-8 h-8 text-red-500" />
+            </div>
+            <div className="max-w-sm">
+              <p className="text-sm font-bold text-gray-900">Search Interrupted</p>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{error}</p>
+            </div>
+            <button 
+              onClick={handleSearch} 
+              className="mt-2 px-6 py-2 bg-black text-white rounded-xl text-xs font-bold hover:bg-gray-800 transition-all"
+            >
+              Try Again
+            </button>
           </div>
         ) : results.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">

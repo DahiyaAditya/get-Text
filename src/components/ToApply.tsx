@@ -11,9 +11,11 @@ interface ToApplyProps {
   onDelete: (id: string) => void;
   onUpdate: (id: string, updates: Partial<ToApplyItem>) => void;
   onGenerate: (item: ToApplyItem) => void;
+  activeFilter: 'to-apply' | 'applied';
+  onFilterChange: (filter: 'to-apply' | 'applied') => void;
 }
 
-export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }: ToApplyProps) {
+export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate, activeFilter, onFilterChange }: ToApplyProps) {
   const getToday = () => new Date().toISOString().split('T')[0];
   const [isAdding, setIsAdding] = useState(false);
   const [isParsingModalOpen, setIsParsingModalOpen] = useState(false);
@@ -126,7 +128,12 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }:
     setIsResultModalOpen(false);
     setParsedJob(null);
     setJobUrl('');
+    onFilterChange('to-apply'); // Switch to 'to-apply' when a new job is added
   };
+
+  const toApplyList = list.filter(item => !item.applied);
+  const appliedList = list.filter(item => item.applied);
+  const filteredList = activeFilter === 'to-apply' ? toApplyList : appliedList;
 
   return (
     <div className="space-y-6">
@@ -152,6 +159,40 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }:
               {isAdding ? 'Cancel' : <><Plus className="w-4 h-4" /> Add Company</>}
             </button>
           </div>
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex items-center gap-2 mb-8 p-1 bg-gray-50 rounded-2xl w-fit border border-gray-100">
+          <button
+            onClick={() => onFilterChange('to-apply')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeFilter === 'to-apply' 
+                ? 'bg-white text-black shadow-sm border border-gray-100' 
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            To Apply
+            <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+              activeFilter === 'to-apply' ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
+            }`}>
+              {toApplyList.length}
+            </span>
+          </button>
+          <button
+            onClick={() => onFilterChange('applied')}
+            className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeFilter === 'applied' 
+                ? 'bg-white text-black shadow-sm border border-gray-100' 
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
+          >
+            Applied
+            <span className={`px-2 py-0.5 rounded-full text-[10px] ${
+              activeFilter === 'applied' ? 'bg-black text-white' : 'bg-gray-200 text-gray-500'
+            }`}>
+              {appliedList.length}
+            </span>
+          </button>
         </div>
 
         <AnimatePresence>
@@ -266,17 +307,19 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }:
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {list.length === 0 ? (
+              {filteredList.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-16 text-center">
+                  <td colSpan={7} className="px-6 py-16 text-center">
                     <div className="flex flex-col items-center gap-2 text-gray-400">
                       <Building2 className="w-8 h-8 opacity-20" />
-                      <p className="italic text-sm">No applications tracked yet.</p>
+                      <p className="italic text-sm">
+                        {activeFilter === 'to-apply' ? 'No pending applications.' : 'No applied jobs yet.'}
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                list.map((item) => (
+                filteredList.map((item) => (
                   <tr 
                     key={item.id} 
                     className={`transition-colors group ${
@@ -369,13 +412,15 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate }:
 
         {/* Mobile List View */}
         <div className="md:hidden space-y-4">
-          {list.length === 0 ? (
+          {filteredList.length === 0 ? (
             <div className="flex flex-col items-center gap-2 text-gray-400 py-12">
               <Building2 className="w-8 h-8 opacity-20" />
-              <p className="italic text-sm">No applications tracked yet.</p>
+              <p className="italic text-sm">
+                {activeFilter === 'to-apply' ? 'No pending applications.' : 'No applied jobs yet.'}
+              </p>
             </div>
           ) : (
-            list.map((item) => (
+            filteredList.map((item) => (
               <div 
                 key={item.id} 
                 className={`p-5 rounded-2xl border transition-colors space-y-4 ${

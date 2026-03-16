@@ -111,6 +111,14 @@ function AppContent() {
 
   // Navigation State
   const [activeTab, setActiveTab] = useState<TabType>('generator');
+  const [toApplyFilter, setToApplyFilter] = useState<'to-apply' | 'applied'>(() => {
+    return (localStorage.getItem('toApplyFilter') as 'to-apply' | 'applied') || 'to-apply';
+  });
+  
+  useEffect(() => {
+    localStorage.setItem('toApplyFilter', toApplyFilter);
+  }, [toApplyFilter]);
+
   const [prefillData, setPrefillData] = useState<{ company: string; position: string; jobId: string; link: string } | null>(null);
 
   // Tracker State
@@ -578,6 +586,8 @@ function AppContent() {
                 onDelete={deleteToApply} 
                 onUpdate={updateToApply}
                 onGenerate={handleGenerateFromApply}
+                activeFilter={toApplyFilter}
+                onFilterChange={setToApplyFilter}
               />
             </motion.div>
           )}
