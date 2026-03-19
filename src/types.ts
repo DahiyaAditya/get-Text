@@ -61,6 +61,7 @@ export interface ReferralGotItem {
   position: string;
   jobId: string;
   dateGot: string;
+  disliked?: boolean;
 }
 
 export interface StoreItem {

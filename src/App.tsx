@@ -331,6 +331,18 @@ function AppContent() {
     }
   };
 
+  const updateGot = async (id: string, updates: Partial<ReferralGotItem>) => {
+    if (!user) return;
+    const item = referralGotList.find(i => i.id === id);
+    if (!item) return;
+    const updatedItem = { ...item, ...updates, uid: user.uid };
+    try {
+      await setDoc(doc(db, 'referralGot', id), updatedItem);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `referralGot/${id}`);
+    }
+  };
+
   const addInterviewHistory = async (item: Omit<InterviewHistoryItem, 'id' | 'uid'>) => {
     if (!user) return;
     const id = crypto.randomUUID();
@@ -619,6 +631,7 @@ function AppContent() {
               <ReferralGot 
                 list={referralGotList}
                 onDelete={deleteGot}
+                onUpdate={updateGot}
               />
             </motion.div>
           )}

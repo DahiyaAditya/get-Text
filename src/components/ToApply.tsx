@@ -58,7 +58,7 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate, a
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
         model: "gemini-3-flash-preview",
-        contents: `Parse this job opening link and extract all relevant details: ${jobUrl}. 
+        contents: `Parse this job opening link and content of job posted and extract all relevant details: ${jobUrl}. 
         Please provide the details in a structured format.`,
         config: {
           tools: [{ urlContext: {} }],
