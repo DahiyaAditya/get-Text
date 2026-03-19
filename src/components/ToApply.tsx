@@ -57,7 +57,7 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate, a
 
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         contents: `Parse this job opening link and content of job posted and extract all relevant details: ${jobUrl}. 
         Please provide the details in a structured format.`,
         config: {
@@ -84,6 +84,10 @@ export default function ToApply({ list, onAdd, onDelete, onUpdate, onGenerate, a
           }
         }
       });
+
+      if (!response.text) {
+        throw new Error('The AI returned an empty response. This can happen if the URL is restricted or the content couldn\'t be read.');
+      }
 
       const result = JSON.parse(response.text);
       setParsedJob(result);

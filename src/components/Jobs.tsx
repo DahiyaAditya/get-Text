@@ -66,7 +66,7 @@ export default function Jobs() {
       `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: "gemini-3.1-pro-preview",
         contents: prompt,
         config: {
           tools: [{ googleSearch: {} }],
@@ -92,6 +92,10 @@ export default function Jobs() {
           }
         }
       });
+
+      if (!response.text) {
+        throw new Error('The AI returned an empty response. Please try again in a moment.');
+      }
 
       const data = JSON.parse(response.text);
       setResults(data);
