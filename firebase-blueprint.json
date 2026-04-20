@@ -1,0 +1,172 @@
+{
+  "entities": {
+    "ToApplyItem": {
+      "title": "To Apply Item",
+      "description": "A job application that the user needs to apply for.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
+        "link": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "lastDate": { "type": "string", "format": "date" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "position", "dateAdded", "lastDate", "uid"]
+    },
+    "ReferralToGetItem": {
+      "title": "Referral To Get Item",
+      "description": "A referral that the user is waiting to receive.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "lastDate": { "type": "string", "format": "date" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "position", "dateAdded", "lastDate", "uid"]
+    },
+    "ReferralGotItem": {
+      "title": "Referral Got Item",
+      "description": "A referral that the user has successfully obtained.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "position": { "type": "string" },
+        "jobId": { "type": "string" },
+        "dateGot": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string", "description": "The user ID who owns this item." }
+      },
+      "required": ["id", "company", "position", "dateGot", "uid"]
+    },
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Basic information about the user.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin"] }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "InterviewHistoryItem": {
+      "title": "Interview History Item",
+      "description": "Details about a past interview experience.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "hrContact": { "type": "string" },
+        "rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string", "enum": ["Assignment", "Interview", "HR", "Technical", "Managerial"] },
+              "questions": { "type": "array", "items": { "type": "string" } },
+              "status": { "type": "string", "enum": ["Passed", "Rejected", "Pending"] },
+              "date": { "type": "string", "format": "date" },
+              "difficulty": { "type": "string", "enum": ["Easy", "Medium", "Hard"] },
+              "duration": { "type": "string" },
+              "interviewer": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        "rejectionRoundIndex": { "type": ["number", "null"] },
+        "overallStatus": { "type": "string", "enum": ["Ongoing", "Passed", "Rejected"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "salary": { "type": "string" },
+        "location": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "company", "rounds", "overallStatus", "tags", "uid"]
+    },
+    "StoreItem": {
+      "title": "Store Item",
+      "description": "A piece of text stored by the user for quick access.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "content", "dateAdded", "uid"]
+    },
+    "TodoItem": {
+      "title": "To-Do Item",
+      "description": "A task related to interviews or assignments.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "company": { "type": "string" },
+        "type": { "type": "string", "enum": ["Interview", "Assignment", "Other"] },
+        "dueDate": { "type": "string", "format": "date" },
+        "dueTime": { "type": "string", "description": "Time in HH:mm format" },
+        "thoughts": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "alertTriggered": { "type": "boolean" },
+        "dateAdded": { "type": "string", "format": "date-time" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "company", "type", "dueDate", "completed", "dateAdded", "uid"]
+    },
+    "CustomMessageType": {
+      "title": "Custom Message Type",
+      "description": "A user-defined message template for referral generation.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "content": { "type": "string" },
+        "icon": { "type": "string" },
+        "uid": { "type": "string" }
+      },
+      "required": ["id", "label", "content", "uid"]
+    }
+  },
+  "firestore": {
+    "/toApply/{itemId}": {
+      "schema": "ToApplyItem",
+      "description": "Collection of job applications to be completed."
+    },
+    "/referralToGet/{itemId}": {
+      "schema": "ReferralToGetItem",
+      "description": "Collection of referrals pending."
+    },
+    "/referralGot/{itemId}": {
+      "schema": "ReferralGotItem",
+      "description": "Collection of referrals successfully obtained."
+    },
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile information."
+    },
+    "/interviewHistory/{itemId}": {
+      "schema": "InterviewHistoryItem",
+      "description": "Collection of interview experiences."
+    },
+    "/store/{itemId}": {
+      "schema": "StoreItem",
+      "description": "Collection of stored text snippets."
+    },
+    "/todos/{itemId}": {
+      "schema": "TodoItem",
+      "description": "Collection of to-do tasks for interviews and assignments."
+    },
+    "/messageTypes/{itemId}": {
+      "schema": "CustomMessageType",
+      "description": "Collection of custom message templates for the referral generator."
+    }
+  }
+}

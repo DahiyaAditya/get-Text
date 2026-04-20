@@ -1,0 +1,268 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {userId}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required, email format)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - role: string (required, ['user', 'admin'])
+    //
+    // Collection: toApply
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - position: string (required)
+    //   - jobId: string (optional)
+    //   - link: string (optional, url format)
+    //   - dateAdded: string (required, iso date)
+    //   - lastDate: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
+    // Collection: referralToGet
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - position: string (required)
+    //   - jobId: string (optional)
+    //   - dateAdded: string (required, iso date)
+    //   - lastDate: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
+    // Collection: referralGot
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - position: string (required)
+    //   - jobId: string (optional)
+    //   - dateGot: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
+    // Collection: interviewHistory
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - hrContact: string (optional)
+    //   - rounds: list (required)
+    //   - rejectionRoundIndex: number (optional)
+    //   - overallStatus: string (required, ['Ongoing', 'Passed', 'Rejected'])
+    //   - tags: list (required)
+    //   - salary: string (optional)
+    //   - location: string (optional)
+    //   - uid: string (required, matches owner)
+    //
+    // Collection: store
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - content: string (required)
+    //   - dateAdded: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
+    // Collection: todos
+    // Document ID: {itemId}
+    // Fields:
+    //   - id: string (required)
+    //   - company: string (required)
+    //   - type: string (required, ['Interview', 'Assignment', 'Other'])
+    //   - dueDate: string (required, iso date)
+    //   - thoughts: string (optional)
+    //   - completed: boolean (required)
+    //   - dateAdded: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isDocOwner() {
+      return isAuthenticated() && request.auth.uid == resource.data.uid;
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function isValidUrl(url) {
+      return url is string && (url.size() == 0 || url.matches("^https?://.*") || url.matches("^www\\..*") || url.size() < 2000);
+    }
+
+    function isValidDateString(dateStr) {
+      return dateStr is string && (dateStr.matches("^\\d{4}-\\d{2}-\\d{2}.*") || dateStr.size() > 0);
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "aditya223307@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data.keys().hasOnly(['uid', 'email', 'displayName', 'photoURL', 'role']) &&
+             data.uid == request.auth.uid &&
+             isValidEmail(data.email) &&
+             data.role in ['user', 'admin'];
+    }
+
+    function isValidToApply(data) {
+      return data.uid == request.auth.uid &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
+             (data.link == "" || (isValidUrl(data.link) && data.link.size() < 2000)) &&
+             isValidDateString(data.dateAdded) &&
+             isValidDateString(data.lastDate);
+    }
+
+    function isValidReferralToGet(data) {
+      return data.uid == request.auth.uid &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
+             isValidDateString(data.dateAdded) &&
+             isValidDateString(data.lastDate);
+    }
+
+    function isValidReferralGot(data) {
+      return data.uid == request.auth.uid &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() < 100 &&
+             data.position is string && data.position.size() < 100 &&
+             isValidDateString(data.dateGot);
+    }
+
+    function isValidStoreItem(data) {
+      return data.keys().hasAll(['id', 'content', 'dateAdded', 'uid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.content is string && data.content.size() < 10000 &&
+             isValidDateString(data.dateAdded) &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidInterviewHistory(data) {
+      return data.keys().hasAll(['id', 'company', 'rounds', 'overallStatus', 'tags', 'uid']) &&
+             data.id is string && data.id.size() > 0 && data.id.size() < 100 &&
+             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
+             data.rounds is list && data.rounds.size() < 20 &&
+             data.tags is list && data.tags.size() < 20 &&
+             data.overallStatus in ['Ongoing', 'Passed', 'Rejected'] &&
+             (!('hrContact' in data) || (data.hrContact is string && data.hrContact.size() < 200)) &&
+             (!('salary' in data) || (data.salary is string && data.salary.size() < 100)) &&
+             (!('location' in data) || (data.location is string && data.location.size() < 200)) &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidTodo(data) {
+      return data.keys().hasAll(['id', 'company', 'type', 'dueDate', 'completed', 'dateAdded', 'uid']) &&
+             data.id is string && data.id.size() < 100 &&
+             data.company is string && data.company.size() > 0 && data.company.size() < 100 &&
+             data.type in ['Interview', 'Assignment', 'Other'] &&
+             isValidDateString(data.dueDate) &&
+             data.completed is bool &&
+             isValidDateString(data.dateAdded) &&
+             (!('dueTime' in data) || (data.dueTime is string && data.dueTime.matches("^\\d{2}:\\d{2}$"))) &&
+             (!('alertTriggered' in data) || data.alertTriggered is bool) &&
+             (!('thoughts' in data) || (data.thoughts is string && data.thoughts.size() < 5000)) &&
+             data.uid == request.auth.uid;
+    }
+
+    function isValidMessageType(data) {
+      return data.keys().hasAll(['label', 'content', 'uid']) &&
+             data.label is string && data.label.size() > 0 && data.label.size() < 100 &&
+             data.content is string && data.content.size() > 0 && data.content.size() < 10000 &&
+             (!('id' in data) || (data.id is string && data.id.size() < 100)) &&
+             (!('icon' in data) || (data.icon is string && data.icon.size() < 50)) &&
+             (!('createdAt' in data) || data.createdAt is timestamp) &&
+             (!('updatedAt' in data) || data.updatedAt is timestamp) &&
+             data.uid == request.auth.uid;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'user' || isAdmin());
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /toApply/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidToApply(request.resource.data);
+      allow update: if isDocOwner() && isValidToApply(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /referralToGet/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidReferralToGet(request.resource.data);
+      allow update: if isDocOwner() && isValidReferralToGet(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /referralGot/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidReferralGot(request.resource.data);
+      allow update: if isDocOwner() && isValidReferralGot(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /interviewHistory/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidInterviewHistory(request.resource.data);
+      allow update: if isDocOwner() && isValidInterviewHistory(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /store/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidStoreItem(request.resource.data);
+      allow update: if isDocOwner() && isValidStoreItem(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /todos/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidTodo(request.resource.data);
+      allow update: if isDocOwner() && isValidTodo(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    match /messageTypes/{itemId} {
+      allow read: if isDocOwner() || isAdmin();
+      allow create: if isAuthenticated() && isValidMessageType(request.resource.data);
+      allow update: if isDocOwner() && isValidMessageType(request.resource.data);
+      allow delete: if isDocOwner() || isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
