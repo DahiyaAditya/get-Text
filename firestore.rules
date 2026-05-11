@@ -26,6 +26,15 @@ service cloud.firestore {
     //   - lastDate: string (required, iso date)
     //   - uid: string (required, matches owner)
     //
+    // Collection: needtoApply
+    // Document ID: {itemId}
+    // Fields:
+    //   - company: string (required)
+    //   - position: string (required)
+    //   - link: string (required, url format)
+    //   - dateAdded: string (required, iso date)
+    //   - uid: string (required, matches owner)
+    //
     // Collection: referralToGet
     // Document ID: {itemId}
     // Fields:
@@ -146,7 +155,13 @@ service cloud.firestore {
              isValidDateString(data.dateAdded) &&
              isValidDateString(data.lastDate);
     }
-
+    function isValidNeedToApply(data) {
+      return data.uid == request.auth.uid &&
+             data.company is string &&
+             data.position is string &&
+             data.link is string &&
+             data.dateAdded is string;
+    }
     function isValidReferralGot(data) {
       return data.uid == request.auth.uid &&
              data.id is string && data.id.size() < 100 &&
@@ -217,6 +232,13 @@ service cloud.firestore {
       allow update: if isDocOwner() && isValidToApply(request.resource.data);
       allow delete: if isDocOwner() || isAdmin();
     }
+
+    match /needtoApply/{itemId} {
+    allow read: if isDocOwner() || isAdmin();
+    allow create: if isAuthenticated() && isValidNeedToApply(request.resource.data);
+    allow update: if isDocOwner() && isValidNeedToApply(request.resource.data);
+    allow delete: if isDocOwner() || isAdmin();
+  }
 
     match /referralToGet/{itemId} {
       allow read: if isDocOwner() || isAdmin();
